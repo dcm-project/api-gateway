@@ -17,7 +17,7 @@ x-db-common: &db-common
 
 services:
   gateway:
-    image: docker.io/krakend/krakend:2.6
+    image: docker.io/krakend:2.13.1
     command: ["run", "-c", "/etc/krakend/krakend.json"]
     ports:
       - "9080:9080"
