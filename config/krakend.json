@@ -52,7 +52,7 @@
           "url_pattern": "/api/v1alpha1/health",
           "method": "GET",
           "host": [
-            "http://placement:8080"
+            "http://placement-manager:8080"
           ]
         }
       ]
@@ -312,7 +312,7 @@
           "url_pattern": "/applications",
           "method": "GET",
           "host": [
-            "http://placement:8080"
+            "http://placement-manager:8080"
           ]
         }
       ]
@@ -325,7 +325,7 @@
           "url_pattern": "/applications",
           "method": "POST",
           "host": [
-            "http://placement:8080"
+            "http://placement-manager:8080"
           ]
         }
       ]

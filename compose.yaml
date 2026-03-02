@@ -24,7 +24,7 @@ services:
       service-provider-manager: { condition: service_started }
       catalog-manager: { condition: service_started }
       policy-manager: { condition: service_started }
-      placement: { condition: service_started }
+      placement-manager: { condition: service_started }
 
   postgres:
     image: docker.io/library/postgres:16-alpine
@@ -77,7 +77,7 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
 
-  placement:
+  placement-manager:
     image: quay.io/dcm-project/placement-manager:latest
     environment:
       <<: *db-common

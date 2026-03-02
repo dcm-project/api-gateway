@@ -15,7 +15,7 @@ flowchart LR
   Gateway --> SPM["ServiceProviderManager<br>service-provider-manager:8080"]
   Gateway --> Catalog["CatalogManager<br>catalog-manager:8080"]
   Gateway --> Policy["PolicyManager<br>policy-manager:8080"]
-  Gateway --> Placement["Placement<br>placement:8080"]
+  Gateway --> Placement["PlacementManager<br>placement-manager:8080"]
 ```
 
 ## Running the gateway
@@ -52,7 +52,7 @@ Backend base URLs are defined in `config/krakend.json`. The default is **cluster
 | ServiceProviderManager | `http://service-provider-manager:8080` |
 | CatalogManager         | `http://catalog-manager:8080`       |
 | PolicyManager          | `http://policy-manager:8080`        |
-| Placement              | `http://placement:8080`             |
+| PlacementManager       | `http://placement-manager:8080`     |
 
 For the full stack, use Compose. To override backend hosts with env vars (e.g. another environment), see `config/krakend.json.tmpl` and [Flexible Config](https://www.krakend.io/docs/configuration/flexible-config/).
 
@@ -80,13 +80,13 @@ For the full stack, use Compose. To override backend hosts with env vars (e.g. a
 | `/api/v1alpha1/health/providers`         | ServiceProviderManager |
 | `/api/v1alpha1/health/catalog`           | CatalogManager         |
 | `/api/v1alpha1/health/policies`          | PolicyManager          |
-| `/api/v1alpha1/health/placement`         | Placement              |
+| `/api/v1alpha1/health/placement`         | PlacementManager       |
 | `/api/v1alpha1/providers`                | ServiceProviderManager |
 | `/api/v1alpha1/service-types`            | CatalogManager         |
 | `/api/v1alpha1/catalog-items`            | CatalogManager         |
 | `/api/v1alpha1/catalog-item-instances`   | CatalogManager         |
 | `/api/v1alpha1/policies`                 | PolicyManager          |
-| `/api/v1alpha1/applications`             | Placement              |
+| `/api/v1alpha1/applications`             | PlacementManager       |
 
 Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, DELETE as per the API).
 
