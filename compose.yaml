@@ -1,7 +1,4 @@
-# DCM API Gateway and managers. Run from api-gateway.
-# With make clone-deps (clones managers to /tmp by default): make compose-up
-# With sibling repos: DCM_MANAGERS_DIR unset, so build context is .. (parent dir).
-# Optional: set DCM_MANAGERS_DIR to the directory containing the manager repos.
+# DCM API Gateway and managers. Manager images are pulled from quay.io/dcm-project.
 #
 # Credentials: set POSTGRES_USER and POSTGRES_PASSWORD in the environment or in
 # a .env file (see .env.example). Defaults are for local dev only.
@@ -47,9 +44,7 @@ services:
       retries: 5
 
   service-provider-manager:
-    build:
-      context: ${DCM_MANAGERS_DIR:-..}/service-provider-manager
-      dockerfile: Containerfile
+    image: quay.io/dcm-project/service-provider-manager:latest
     environment:
       <<: *db-common
       DB_NAME: service-provider
@@ -60,9 +55,7 @@ services:
       postgres: { condition: service_healthy }
 
   catalog-manager:
-    build:
-      context: ${DCM_MANAGERS_DIR:-..}/catalog-manager
-      dockerfile: Containerfile
+    image: quay.io/dcm-project/catalog-manager:latest
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"
@@ -73,9 +66,7 @@ services:
       postgres: { condition: service_healthy }
 
   policy-manager:
-    build:
-      context: ${DCM_MANAGERS_DIR:-..}/policy-manager
-      dockerfile: Containerfile
+    image: quay.io/dcm-project/policy-manager:latest
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"
@@ -87,9 +78,7 @@ services:
       postgres: { condition: service_healthy }
 
   placement:
-    build:
-      context: ${DCM_MANAGERS_DIR:-..}/placement-manager
-      dockerfile: Containerfile
+    image: quay.io/dcm-project/placement-manager:latest
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"

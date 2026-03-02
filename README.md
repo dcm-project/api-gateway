@@ -32,7 +32,7 @@ make validate-config
 
 ### Run locally (full stack)
 
-From the `api-gateway` directory, run the gateway and all managers via Compose. This runs `clone-deps` then starts the stack:
+From the `api-gateway` directory, pull the manager images from `quay.io/dcm-project` and start the full stack via Compose:
 
 ```bash
 cd api-gateway
@@ -42,10 +42,6 @@ make run
 The gateway is at `http://localhost:9080`. Stop with `make compose-down`. To run only the gateway binary on the host (no Compose, e.g. when backends are elsewhere), use `make run-gateway-only`.
 
 **Credentials:** Compose uses `POSTGRES_USER` and `POSTGRES_PASSWORD` (defaults: `admin` / `adminpass` for local dev). To override, set them in the environment or in a `.env` file (see `.env.example`).
-
-**Temporary approach:** `make run` calls `clone-deps`, which clones the four manager repos into a temporary directory (default `$TMPDIR/dcm-compose-repos` or `/tmp/dcm-compose-repos`) so you don't need them as siblings. It writes `DCM_MANAGERS_DIR` into `.env` so `podman compose` finds them. Override the clone location with `DCM_MANAGERS_DIR` (e.g. `DCM_MANAGERS_DIR=../ make clone-deps` then `make compose-up`). Then open `http://localhost:9080` (e.g. `curl -s http://localhost:9080/api/v1alpha1/health/providers`).
-
-**Future (quay.io):** Manager container images are not yet published. Once they are (e.g. to quay.io/dcm-project), we can switch this compose to use `image:` instead of building from source—no cloning. Building and pushing images on PR merge (e.g. in CI) is the intended next step.
 
 ### Backend URL configuration
 
@@ -69,12 +65,12 @@ For the full stack, use Compose. To override backend hosts with env vars (e.g. a
    ```
    The gateway is at `http://localhost:9080`.
 
-2. **Smoke test (gateway only)**  
+2. **Smoke test (gateway only)**
    With no backends running, use `make run-gateway-only` and check:
    ```bash
    curl -s http://localhost:9080/__health
    ```
-3. **Full test (gateway + backends)**  
+3. **Full test (gateway + backends)**
    After `make run`, try e.g. `curl -s http://localhost:9080/api/v1alpha1/health/providers`. Stop with `make compose-down`.
 
 ## Route mapping
