@@ -18,6 +18,15 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace \
             docker.io/krakend:2.13.1 check -c config/krakend.json
 
+  gateway-contract-test:
+    name: Gateway Contract Test
+    uses: dcm-project/shared-workflows/.github/workflows/gateway-contract-test.yaml@main
+    with:
+      warn-uncovered: true
+      watch-paths: |
+        config/krakend.json
+        config/krakend.json.tmpl
+
   smoke:
     name: Smoke test (gateway starts and responds)
     runs-on: ubuntu-latest
