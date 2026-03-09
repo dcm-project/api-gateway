@@ -273,23 +273,45 @@
       ]
     },
     {
-      "endpoint": "/api/v1alpha1/applications",
+      "endpoint": "/api/v1alpha1/resources",
       "method": "GET",
       "backend": [
         {
-          "url_pattern": "/applications",
+          "url_pattern": "/resources",
           "method": "GET",
           "host": ["{{ or (env `PLACEMENT_MANAGER_HOST`) `http://placement-manager:8080` }}"]
         }
       ]
     },
     {
-      "endpoint": "/api/v1alpha1/applications",
+      "endpoint": "/api/v1alpha1/resources",
       "method": "POST",
       "backend": [
         {
-          "url_pattern": "/applications",
+          "url_pattern": "/resources",
           "method": "POST",
+          "host": ["{{ or (env `PLACEMENT_MANAGER_HOST`) `http://placement-manager:8080` }}"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1alpha1/resources/{resourceId}",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/resources/{resourceId}",
+          "method": "GET",
+          "host": ["{{ or (env `PLACEMENT_MANAGER_HOST`) `http://placement-manager:8080` }}"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/v1alpha1/resources/{resourceId}",
+      "method": "DELETE",
+      "backend": [
+        {
+          "url_pattern": "/resources/{resourceId}",
+          "method": "DELETE",
           "host": ["{{ or (env `PLACEMENT_MANAGER_HOST`) `http://placement-manager:8080` }}"]
         }
       ]
