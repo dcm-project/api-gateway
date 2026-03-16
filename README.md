@@ -43,18 +43,40 @@ The gateway is at `http://localhost:9080`. Stop with `make compose-down`. To run
 
 **Credentials:** Compose uses `POSTGRES_USER` and `POSTGRES_PASSWORD` (defaults: `admin` / `adminpass` for local dev). To override, set them in the environment or in a `.env` file (see `.env.example`).
 
+### Gateway configuration
+
+The gateway uses [KrakenD Flexible Configuration](https://www.krakend.io/docs/configuration/flexible-config/) to generate its config from a Go template and a data file:
+
+| File | Purpose |
+|---|---|
+| `config/krakend.json.tmpl` | Template — defines the KrakenD structure and loops over the endpoint data |
+| `config/settings/endpoints.json` | Data — list of all endpoint definitions (path, methods, backend host) |
+
+**Adding or modifying an endpoint** only requires editing `config/settings/endpoints.json`. Each entry looks like:
+
+```json
+{ "path": "/api/v1alpha1/providers", "methods": ["GET", "POST"], "host_env": "SPM_HOST", "host_default": "http://service-provider-manager:8080" }
+```
+
+- `path` — the gateway endpoint path (also used as the backend `url_pattern` by default).
+- `methods` — HTTP methods to expose. Each method becomes a separate KrakenD endpoint.
+- `host_env` / `host_default` — the env var to read the backend host from, with a default fallback.
+- `backend_path` (optional) — set this only when the backend `url_pattern` differs from `path`.
+
+After editing, validate with `make validate-config`.
+
 ### Backend URL configuration
 
-Backend base URLs are defined in `config/krakend.json`. The default is **cluster-style**: one host per service, same port (8080), e.g. `http://catalog-manager:8080`:
+Backend base URLs default to cluster-style service names:
 
-| Backend                | Default (cluster)                   |
-|------------------------|-------------------------------------|
-| ServiceProviderManager | `http://service-provider-manager:8080` |
-| CatalogManager         | `http://catalog-manager:8080`       |
-| PolicyManager          | `http://policy-manager:8080`        |
-| PlacementManager       | `http://placement-manager:8080`     |
+| Backend                | Env var                  | Default                              |
+|------------------------|--------------------------|--------------------------------------|
+| ServiceProviderManager | `SPM_HOST`               | `http://service-provider-manager:8080` |
+| CatalogManager         | `CATALOG_MANAGER_HOST`   | `http://catalog-manager:8080`        |
+| PolicyManager          | `POLICY_MANAGER_HOST`    | `http://policy-manager:8080`         |
+| PlacementManager       | `PLACEMENT_MANAGER_HOST` | `http://placement-manager:8080`      |
 
-For the full stack, use Compose. To override backend hosts with env vars (e.g. another environment), see `config/krakend.json.tmpl` and [Flexible Config](https://www.krakend.io/docs/configuration/flexible-config/).
+To override a backend host (e.g. for a different environment), set the corresponding env var before starting KrakenD.
 
 ### Testing locally
 
@@ -88,7 +110,7 @@ For the full stack, use Compose. To override backend hosts with env vars (e.g. a
 | `/api/v1alpha1/policies`                 | PolicyManager          |
 | `/api/v1alpha1/resources`                | PlacementManager       |
 
-Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, DELETE as per the API).
+Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, PATCH, DELETE as per the API). See `config/settings/endpoints.json` for the full list.
 
 **Health:** Backend health is exposed through the gateway. Use `GET /api/v1alpha1/health/providers`, `/health/catalog`, `/health/policies`, `/health/placement` to check each manager (e.g. `curl http://localhost:9080/api/v1alpha1/health/catalog`). KrakenD also exposes `GET /__health` for the gateway process only.
 
@@ -98,7 +120,7 @@ Egress (outbound traffic from DCM to external Service Providers) is **documented
 
 **Intended model:** The gateway will act as the single **exit** point: when a manager (or the platform) needs to call an external Service Provider, the call will go **manager → gateway → external SP**. That gives one place for policy, logging, and TLS to external SPs.
 
-**In this repo:** See `config/krakend.json` for commented egress endpoint examples. When the egress flow is implemented, extend the gateway config with active routes for outbound to SPs.
+**In this repo:** When the egress flow is implemented, add outbound routes to `config/settings/endpoints.json` and extend the template as needed.
 
 ## Authentication (future)
 
