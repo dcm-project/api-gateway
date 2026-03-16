@@ -43,6 +43,15 @@ services:
       timeout: 5s
       retries: 5
 
+  opa:
+    image: docker.io/openpolicyagent/opa:latest-static
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+    volumes:
+      - policy_policies:/policies
+
   service-provider-manager:
     image: quay.io/dcm-project/service-provider-manager:latest
     environment:
@@ -72,10 +81,14 @@ services:
       BIND_ADDRESS: ":8080"
       LOG_LEVEL: info
       DB_NAME: policy-manager
+      OPA_URL: "http://opa:8181"
+      OPA_TIMEOUT: "10s"
     expose:
       - "8080"
     depends_on:
       postgres: { condition: service_healthy }
+      opa:
+        condition: service_started
 
   placement-manager:
     image: quay.io/dcm-project/placement-manager:latest
@@ -90,3 +103,4 @@ services:
 
 volumes:
   postgres_data: {}
+  policy_policies: {}
