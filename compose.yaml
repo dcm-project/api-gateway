@@ -15,11 +15,14 @@ x-db-common: &db-common
 services:
   gateway:
     image: docker.io/krakend:2.13.1
-    command: ["run", "-c", "/etc/krakend/krakend.json"]
+    command: ["run", "-c", "/etc/krakend/krakend.json.tmpl"]
+    environment:
+      FC_ENABLE: "1"
+      FC_SETTINGS: "/etc/krakend/settings"
     ports:
       - "9080:9080"
     volumes:
-      - ./config/krakend.json:/etc/krakend/krakend.json:ro
+      - ./config:/etc/krakend:ro
     depends_on:
       service-provider-manager: { condition: service_started }
       catalog-manager: { condition: service_started }
