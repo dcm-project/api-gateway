@@ -69,6 +69,7 @@ services:
       <<: *db-common
       BIND_ADDRESS: ":8080"
       DB_NAME: catalog-manager
+      PLACEMENT_MANAGER_URL: "http://placement-manager:8080"
     expose:
       - "8080"
     depends_on:
@@ -96,6 +97,8 @@ services:
       <<: *db-common
       BIND_ADDRESS: ":8080"
       DB_NAME: placement-manager
+      POLICY_MANAGER_EVALUATION_URL: "http://policy-manager:8081"
+      SP_RESOURCE_MANAGER_URL: "http://service-provider-manager:8080"
     expose:
       - "8080"
     depends_on:
