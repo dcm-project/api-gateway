@@ -4,6 +4,7 @@
   "name": "dcm-api-gateway",
   "port": 9080,
   "timeout": "2s",
+  "output_encoding": "no-op",
   "endpoints": [
     {
       "endpoint": "/api/v1alpha1/health/providers",
