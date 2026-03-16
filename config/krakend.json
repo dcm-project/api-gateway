@@ -227,6 +227,19 @@
       ]
     },
     {
+      "endpoint": "/api/v1alpha1/catalog-item-instances",
+      "method": "POST",
+      "backend": [
+        {
+          "url_pattern": "/api/v1alpha1/catalog-item-instances",
+          "method": "POST",
+          "host": [
+            "http://catalog-manager:8080"
+          ]
+        }
+      ]
+    },
+    {
       "endpoint": "/api/v1alpha1/catalog-item-instances/{catalogItemInstanceId}",
       "method": "GET",
       "backend": [
