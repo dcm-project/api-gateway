@@ -17,6 +17,7 @@
     {
       "endpoint": "{{ $path }}",
       "method": "{{ $method }}",
+      "input_query_strings": ["*"],
       "backend": [
         {
           "url_pattern": "{{ $backend_path }}",
