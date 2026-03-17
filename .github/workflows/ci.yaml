@@ -15,8 +15,7 @@ jobs:
 
       - name: Validate KrakenD config
         run: |
-          docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace \
-            docker.io/krakend:2.13.1 check -c config/krakend.json
+          make validate-config
 
   smoke:
     name: Smoke test (gateway starts and responds)
@@ -26,9 +25,7 @@ jobs:
 
       - name: Start gateway
         run: |
-          docker run -d --name gateway -p 9080:9080 \
-            -v ${{ github.workspace }}/config/krakend.json:/etc/krakend/krakend.json:ro \
-            docker.io/krakend:2.13.1 run -c /etc/krakend/krakend.json
+          make run-gateway-only-container
 
       - name: Wait for gateway and check __health
         run: |
