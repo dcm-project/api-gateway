@@ -47,6 +47,7 @@ services:
 
   opa:
     image: docker.io/openpolicyagent/opa:latest-static
+    pull_policy: always
     command:
       - "run"
       - "--server"
@@ -56,6 +57,7 @@ services:
 
   service-provider-manager:
     image: quay.io/dcm-project/service-provider-manager:latest
+    pull_policy: always
     environment:
       <<: *db-common
       DB_NAME: service-provider
@@ -67,6 +69,7 @@ services:
 
   catalog-manager:
     image: quay.io/dcm-project/catalog-manager:latest
+    pull_policy: always
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"
@@ -79,6 +82,7 @@ services:
 
   policy-manager:
     image: quay.io/dcm-project/policy-manager:latest
+    pull_policy: always
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"
@@ -95,6 +99,7 @@ services:
 
   placement-manager:
     image: quay.io/dcm-project/placement-manager:latest
+    pull_policy: always
     environment:
       <<: *db-common
       BIND_ADDRESS: ":8080"
