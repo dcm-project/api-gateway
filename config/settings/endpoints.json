@@ -11,7 +11,7 @@
     { "path": "/api/v1alpha1/catalog-items", "methods": ["GET", "POST"], "host_env": "CATALOG_MANAGER_HOST", "host_default": "http://catalog-manager:8080" },
     { "path": "/api/v1alpha1/catalog-items/{catalogItemId}", "methods": ["GET", "PATCH", "DELETE"], "host_env": "CATALOG_MANAGER_HOST", "host_default": "http://catalog-manager:8080" },
     { "path": "/api/v1alpha1/catalog-item-instances", "methods": ["GET", "POST"], "host_env": "CATALOG_MANAGER_HOST", "host_default": "http://catalog-manager:8080" },
-    { "path": "/api/v1alpha1/catalog-item-instances/{catalogItemInstanceId}", "methods": ["GET"], "host_env": "CATALOG_MANAGER_HOST", "host_default": "http://catalog-manager:8080" },
+    { "path": "/api/v1alpha1/catalog-item-instances/{catalogItemInstanceId}", "methods": ["GET", "DELETE"], "host_env": "CATALOG_MANAGER_HOST", "host_default": "http://catalog-manager:8080" },
     { "path": "/api/v1alpha1/policies", "methods": ["GET", "POST"], "host_env": "POLICY_MANAGER_HOST", "host_default": "http://policy-manager:8080" },
     { "path": "/api/v1alpha1/policies/{policyId}", "methods": ["GET", "PATCH", "DELETE"], "host_env": "POLICY_MANAGER_HOST", "host_default": "http://policy-manager:8080" },
     { "path": "/api/v1alpha1/resources", "methods": ["GET", "POST"], "host_env": "PLACEMENT_MANAGER_HOST", "host_default": "http://placement-manager:8080" }
