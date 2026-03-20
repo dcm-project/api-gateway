@@ -45,6 +45,15 @@ services:
       timeout: 5s
       retries: 5
 
+  nats:
+    image: docker.io/library/nats:2-alpine
+    command: ["--jetstream", "--store_dir=/data"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - nats_data:/data
+
   opa:
     image: docker.io/openpolicyagent/opa:latest-static
     pull_policy: always
@@ -62,10 +71,12 @@ services:
       <<: *db-common
       DB_NAME: service-provider
       SVC_ADDRESS: ":8080"
+      NATS_URL: "nats://nats:4222"
     expose:
       - "8080"
     depends_on:
       postgres: { condition: service_healthy }
+      nats: { condition: service_started }
 
   catalog-manager:
     image: quay.io/dcm-project/catalog-manager:latest
@@ -97,6 +108,21 @@ services:
       opa:
         condition: service_started
 
+  kubevirt-service-provider:
+    profiles: ["providers", "kubevirt"]
+    image: quay.io/dcm-project/kubevirt-service-provider:latest
+    pull_policy: always
+    environment:
+      NATS_URL: "nats://nats:4222"
+      SERVICE_MANAGER_ENDPOINT: "http://service-provider-manager:8080/api/v1alpha1"
+      PROVIDER_ENDPOINT: "http://kubevirt-service-provider:8081/api/v1alpha1/vms"
+      KUBERNETES_NAMESPACE: ${KUBERNETES_NAMESPACE:-default}
+      KUBERNETES_KUBECONFIG: /kubeconfig
+    volumes:
+      - ${KUBERNETES_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro
+    depends_on:
+      service-provider-manager: { condition: service_started }
+
   placement-manager:
     image: quay.io/dcm-project/placement-manager:latest
     pull_policy: always
@@ -113,4 +139,5 @@ services:
 
 volumes:
   postgres_data: {}
+  nats_data: {}
   policy_policies: {}
