@@ -109,17 +109,19 @@ services:
         condition: service_started
 
   kubevirt-service-provider:
+    container_name: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
     profiles: ["providers", "kubevirt"]
     image: quay.io/dcm-project/kubevirt-service-provider:latest
     pull_policy: always
     environment:
       NATS_URL: "nats://nats:4222"
       SERVICE_MANAGER_ENDPOINT: "http://service-provider-manager:8080/api/v1alpha1"
-      PROVIDER_ENDPOINT: "http://kubevirt-service-provider:8081/api/v1alpha1/vms"
-      KUBERNETES_NAMESPACE: ${KUBERNETES_NAMESPACE:-default}
+      PROVIDER_NAME: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
+      PROVIDER_ENDPOINT: "http://${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}:8081/api/v1alpha1/vms"
+      KUBERNETES_NAMESPACE: ${KUBEVIRT_NAMESPACE:-default}
       KUBERNETES_KUBECONFIG: /kubeconfig
     volumes:
-      - ${KUBERNETES_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro
+      - ${KUBEVIRT_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro
     depends_on:
       service-provider-manager: { condition: service_started }
 
