@@ -14,14 +14,14 @@ x-db-common: &db-common
 
 services:
   gateway:
-    image: docker.io/krakend:2.13.1
-    command: ["run", "-c", "config/krakend.json.tmpl"]
-    env_file: gateway.env
-    working_dir: /workspace
+    image: docker.io/traefik:v3.4
+    command:
+      - "--configFile=/etc/traefik/traefik.yml"
     ports:
       - "9080:9080"
     volumes:
-      - .:/workspace:ro,z
+      - ./config/traefik.yml:/etc/traefik/traefik.yml:ro,z
+      - ./config/dynamic:/etc/traefik/dynamic:ro,z
     depends_on:
       service-provider-manager: { condition: service_started }
       catalog-manager: { condition: service_started }
