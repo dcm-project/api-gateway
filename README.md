@@ -43,6 +43,62 @@ The gateway is at `http://localhost:9080`. Stop with `make compose-down`. To run
 
 **Credentials:** Compose uses `POSTGRES_USER` and `POSTGRES_PASSWORD` (defaults: `admin` / `adminpass` for local dev). To override, set them in the environment or in a `.env` file (see `.env.example`).
 
+### Image versions
+
+Each DCM manager image defaults to `:latest` but can be pinned to a specific version via environment variables in `.env`.
+
+#### Available tag formats
+
+Service repos push images to `quay.io/dcm-project/<service>` with the following tags:
+
+| Tag format | Example | When created                                   |
+|---|---|------------------------------------------------|
+| `latest` | `latest` | Every push to `main`                           |
+| `sha-<7chars>` | `sha-abc1234` | Every push to `main`                           |
+| `v<semver>` | `v1.2.0` | When a `v*` version branch is created or updated |
+
+Browse available tags for a service at `https://quay.io/repository/dcm-project/<service>?tab=tags`.
+
+#### How to pin a version
+
+Set the corresponding variable in `.env` (see `.env.example` for the full list):
+
+```bash
+PLACEMENT_MANAGER_VERSION=v1.2.0
+SERVICE_PROVIDER_MANAGER_VERSION=sha-abc1234
+```
+
+Omitting a variable (or leaving it commented out) defaults to `latest`.
+
+| Variable | Service |
+|---|---|
+| `SERVICE_PROVIDER_MANAGER_VERSION` | service-provider-manager |
+| `CATALOG_MANAGER_VERSION` | catalog-manager |
+| `POLICY_MANAGER_VERSION` | policy-manager |
+| `PLACEMENT_MANAGER_VERSION` | placement-manager |
+| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | kubevirt-service-provider |
+| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | k8s-container-service-provider |
+
+#### How to check deployed versions
+
+Run `podman compose config` (or `docker compose config`) to see the resolved image references:
+
+```bash
+podman compose config | grep 'image:'
+```
+
+#### How to update versions
+
+1. Check available tags on [quay.io/dcm-project](https://quay.io/organization/dcm-project) for the service you want to update.
+2. Set the version variable in `.env`:
+   ```bash
+   PLACEMENT_MANAGER_VERSION=v1.3.0
+   ```
+3. Restart the stack to pull the new image:
+   ```bash
+   make run
+   ```
+
 ### Gateway configuration
 
 The gateway uses [Traefik's file provider](https://doc.traefik.io/traefik/providers/file/) to load routing configuration from YAML files. This approach works identically in Docker Compose and Kubernetes (via ConfigMap), enabling a single configuration for both deployment targets.
