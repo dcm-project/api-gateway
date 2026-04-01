@@ -140,3 +140,12 @@ podman-compose down -v
 | `ACM_CLUSTER_SP_PULL_SECRET` | *(required)* | Base64-encoded dockerconfigjson pull secret for ACM hosted clusters |
 | `ACM_CLUSTER_SP_DEFAULT_INFRA_ENV` | *(none)* | **BareMetal only.** Default InfraEnv name; can be overridden per-request via `provider_hints.acm.infra_env` |
 | `ACM_CLUSTER_SP_AGENT_NAMESPACE` | *(none)* | **BareMetal only.** Namespace where Agent resources are located |
+| `SERVICE_PROVIDER_MANAGER_VERSION` | `main` | Image tag for service-provider-manager |
+| `CATALOG_MANAGER_VERSION` | `main` | Image tag for catalog-manager |
+| `POLICY_MANAGER_VERSION` | `main` | Image tag for policy-manager |
+| `PLACEMENT_MANAGER_VERSION` | `main` | Image tag for placement-manager |
+| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | `main` | Image tag for kubevirt-service-provider |
+| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for k8s-container-service-provider |
+| `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for acm-cluster-service-provider |
+
+See [Image versions](README.md#image-versions) in the README for available tag formats and how to update.
