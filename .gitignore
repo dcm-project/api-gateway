@@ -1,3 +1,5 @@
 # Compose: local credential overrides
 .env
 kubeconfig.yaml
+
+.idea
