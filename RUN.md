@@ -5,6 +5,7 @@
 - [Podman](https://podman.io/) and `podman-compose` installed
 - (Optional) A Kubernetes cluster with KubeVirt for the kubevirt-service-provider
 - (Optional) A Kubernetes cluster for the k8s-container-service-provider
+- (Optional) An OpenShift cluster with ACM/MCE and HyperShift for the acm-cluster-service-provider
 
 ## Quick start
 
@@ -49,6 +50,23 @@ Optionally override the provider name:
 export K8S_CONTAINER_SP_NAME=my-provider
 ```
 
+### ACM cluster service provider
+
+To include the `acm-cluster-service-provider`, set the required environment variables and
+activate the `acm-cluster` profile:
+
+```bash
+export ACM_CLUSTER_SP_KUBECONFIG="/path/to/kubeconfig"
+podman-compose --profile acm-cluster up -d
+```
+
+Optionally override the provider name or namespace:
+
+```bash
+export ACM_CLUSTER_SP_NAME=my-acm-provider
+export ACM_CLUSTER_SP_NAMESPACE=clusters
+```
+
 ### All providers
 
 To start all providers at once, use the `providers` profile:
@@ -56,6 +74,7 @@ To start all providers at once, use the `providers` profile:
 ```bash
 export KUBERNETES_KUBECONFIG="/path/to/kubeconfig"
 export K8S_CONTAINER_SP_KUBECONFIG="/path/to/kubeconfig"
+export ACM_CLUSTER_SP_KUBECONFIG="/path/to/kubeconfig"
 podman-compose --profile providers up -d
 ```
 
@@ -99,3 +118,6 @@ podman-compose down -v
 | `K8S_CONTAINER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the k8s-container-service-provider|
 | `K8S_CONTAINER_SP_NAMESPACE` | `default` | Kubernetes namespace for k8s containers |
 | `K8S_CONTAINER_SP_NAME` | `k8s-container-provider` | Provider name for the k8s-container-service-provider |
+| `ACM_CLUSTER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the acm-cluster-service-provider |
+| `ACM_CLUSTER_SP_NAMESPACE` | `default` | Kubernetes namespace for ACM hosted clusters |
+| `ACM_CLUSTER_SP_NAME` | `acm-cluster-sp` | Provider name for the acm-cluster-service-provider |
