@@ -5,6 +5,7 @@
 - [Podman](https://podman.io/) and `podman-compose` installed
 - (Optional) A Kubernetes cluster with KubeVirt for the kubevirt-service-provider
 - (Optional) A Kubernetes cluster for the k8s-container-service-provider
+- (Optional) An OpenShift cluster with ACM/MCE and HyperShift for the acm-cluster-service-provider
 
 ## Quick start
 
@@ -50,6 +51,27 @@ export K8S_CONTAINER_SP_NAME=my-provider
 export K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE=LoadBalancer
 ```
 
+### ACM cluster service provider
+
+To include the `acm-cluster-service-provider`, set the required environment variables and
+activate the `acm-cluster` profile:
+
+```bash
+export ACM_CLUSTER_SP_KUBECONFIG="/path/to/kubeconfig"
+export ACM_CLUSTER_SP_BASE_DOMAIN="apps.example.com"
+export ACM_CLUSTER_SP_PULL_SECRET="<base64-encoded-dockerconfigjson>"
+export ACM_CLUSTER_SP_DEFAULT_INFRA_ENV="my-infra-env"
+export ACM_CLUSTER_SP_AGENT_NAMESPACE="my-agent-namespace"
+podman-compose --profile acm-cluster up -d
+```
+
+Optionally override the provider name or namespace:
+
+```bash
+export ACM_CLUSTER_SP_NAME=my-acm-provider
+export ACM_CLUSTER_SP_NAMESPACE=clusters
+```
+
 ### All providers
 
 To start all providers at once, use the `providers` profile:
@@ -57,6 +79,11 @@ To start all providers at once, use the `providers` profile:
 ```bash
 export KUBERNETES_KUBECONFIG="/path/to/kubeconfig"
 export K8S_CONTAINER_SP_KUBECONFIG="/path/to/kubeconfig"
+export ACM_CLUSTER_SP_KUBECONFIG="/path/to/kubeconfig"
+export ACM_CLUSTER_SP_BASE_DOMAIN="apps.example.com"
+export ACM_CLUSTER_SP_PULL_SECRET="<base64-encoded-dockerconfigjson>"
+export ACM_CLUSTER_SP_DEFAULT_INFRA_ENV="my-infra-env"
+export ACM_CLUSTER_SP_AGENT_NAMESPACE="my-agent-namespace"
 podman-compose --profile providers up -d
 ```
 
@@ -101,3 +128,10 @@ podman-compose down -v
 | `K8S_CONTAINER_SP_NAMESPACE` | `default` | Kubernetes namespace for k8s containers |
 | `K8S_CONTAINER_SP_NAME` | `k8s-container-provider` | Provider name for the k8s-container-service-provider |
 | `K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE` | `NodePort` | Kubernetes Service type for external ports (`NodePort` or `LoadBalancer`) |
+| `ACM_CLUSTER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the acm-cluster-service-provider |
+| `ACM_CLUSTER_SP_NAMESPACE` | `default` | Kubernetes namespace for ACM hosted clusters |
+| `ACM_CLUSTER_SP_NAME` | `acm-cluster-sp` | Provider name for the acm-cluster-service-provider |
+| `ACM_CLUSTER_SP_BASE_DOMAIN` | *(required)* | Base DNS domain for ACM hosted clusters (e.g., `apps.example.com`) |
+| `ACM_CLUSTER_SP_PULL_SECRET` | *(required)* | Base64-encoded dockerconfigjson pull secret for ACM hosted clusters |
+| `ACM_CLUSTER_SP_DEFAULT_INFRA_ENV` | *(required)* | Default InfraEnv name for baremetal cluster provisioning |
+| `ACM_CLUSTER_SP_AGENT_NAMESPACE` | *(required)* | Namespace where Agent resources are located for baremetal provisioning |
