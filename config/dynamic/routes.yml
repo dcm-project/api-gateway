@@ -1,0 +1,122 @@
+http:
+  routers:
+    # ── Health endpoints (GET only) ───────────────────────────────────
+    health-providers:
+      rule: "Path(`/api/v1alpha1/health/providers`) && Method(`GET`)"
+      service: service-provider-manager
+      entryPoints: [web]
+      middlewares: [strip-health-suffix]
+
+    health-catalog:
+      rule: "Path(`/api/v1alpha1/health/catalog`) && Method(`GET`)"
+      service: catalog-manager
+      entryPoints: [web]
+      middlewares: [strip-health-suffix]
+
+    health-policies:
+      rule: "Path(`/api/v1alpha1/health/policies`) && Method(`GET`)"
+      service: policy-manager
+      entryPoints: [web]
+      middlewares: [strip-health-suffix]
+
+    health-placement:
+      rule: "Path(`/api/v1alpha1/health/placement`) && Method(`GET`)"
+      service: placement-manager
+      entryPoints: [web]
+      middlewares: [strip-health-suffix]
+
+    # ── ServiceProviderManager ────────────────────────────────────────
+    providers-collection:
+      rule: "Path(`/api/v1alpha1/providers`) && (Method(`GET`) || Method(`POST`))"
+      service: service-provider-manager
+      entryPoints: [web]
+
+    providers-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/providers/[^/:]+$`) && (Method(`GET`) || Method(`PUT`) || Method(`DELETE`))"
+      service: service-provider-manager
+      entryPoints: [web]
+
+    service-type-instances-collection:
+      rule: "Path(`/api/v1alpha1/service-type-instances`) && Method(`GET`)"
+      service: service-provider-manager
+      entryPoints: [web]
+
+    service-type-instances-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/service-type-instances/[^/:]+$`) && Method(`GET`)"
+      service: service-provider-manager
+      entryPoints: [web]
+
+    # ── CatalogManager ────────────────────────────────────────────────
+    service-types-collection:
+      rule: "Path(`/api/v1alpha1/service-types`) && Method(`GET`)"
+      service: catalog-manager
+      entryPoints: [web]
+
+    service-types-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/service-types/[^/:]+$`) && Method(`GET`)"
+      service: catalog-manager
+      entryPoints: [web]
+
+    catalog-items-collection:
+      rule: "Path(`/api/v1alpha1/catalog-items`) && (Method(`GET`) || Method(`POST`))"
+      service: catalog-manager
+      entryPoints: [web]
+
+    catalog-items-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/catalog-items/[^/:]+$`) && (Method(`GET`) || Method(`PATCH`) || Method(`DELETE`))"
+      service: catalog-manager
+      entryPoints: [web]
+
+    catalog-item-instances-collection:
+      rule: "Path(`/api/v1alpha1/catalog-item-instances`) && (Method(`GET`) || Method(`POST`))"
+      service: catalog-manager
+      entryPoints: [web]
+
+    catalog-item-instances-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/catalog-item-instances/[^/:]+$`) && (Method(`GET`) || Method(`DELETE`))"
+      service: catalog-manager
+      entryPoints: [web]
+
+    # ── PolicyManager ─────────────────────────────────────────────────
+    policies-collection:
+      rule: "Path(`/api/v1alpha1/policies`) && (Method(`GET`) || Method(`POST`))"
+      service: policy-manager
+      entryPoints: [web]
+
+    policies-resource:
+      rule: "PathRegexp(`^/api/v1alpha1/policies/[^/:]+$`) && (Method(`GET`) || Method(`PATCH`) || Method(`DELETE`))"
+      service: policy-manager
+      entryPoints: [web]
+
+    # ── PlacementManager ──────────────────────────────────────────────
+    resources-collection:
+      rule: "Path(`/api/v1alpha1/resources`) && (Method(`GET`) || Method(`POST`))"
+      service: placement-manager
+      entryPoints: [web]
+
+  middlewares:
+    strip-health-suffix:
+      replacePathRegex:
+        regex: "^/api/v1alpha1/health/.*"
+        replacement: "/api/v1alpha1/health"
+
+  services:
+    service-provider-manager:
+      loadBalancer:
+        servers:
+          - url: "http://service-provider-manager:8080"
+
+    catalog-manager:
+      loadBalancer:
+        servers:
+          - url: "http://catalog-manager:8080"
+
+    policy-manager:
+      loadBalancer:
+        servers:
+          - url: "http://policy-manager:8080"
+
+    placement-manager:
+      loadBalancer:
+        servers:
+          - url: "http://placement-manager:8080"

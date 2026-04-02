@@ -1,0 +1,16 @@
+entryPoints:
+  web:
+    address: ":9080"
+
+providers:
+  file:
+    directory: /etc/traefik/dynamic
+    watch: true
+
+ping:
+  entryPoint: web
+
+log:
+  level: INFO
+
+accessLog: {}
