@@ -77,6 +77,11 @@ http:
       service: catalog-manager
       entryPoints: [web]
 
+    catalog-item-instances-rehydrate:
+      rule: "PathRegexp(`^/api/v1alpha1/catalog-item-instances/[^/]+:rehydrate$`) && Method(`POST`)"
+      service: catalog-manager
+      entryPoints: [web]
+
     # ── PolicyManager ─────────────────────────────────────────────────
     policies-collection:
       rule: "Path(`/api/v1alpha1/policies`) && (Method(`GET`) || Method(`POST`))"

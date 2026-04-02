@@ -101,7 +101,7 @@ Then mount the ConfigMap into the Traefik pod at `/etc/traefik/traefik.yml` and 
 | `/api/v1alpha1/policies`                 | PolicyManager          |
 | `/api/v1alpha1/resources`                | PlacementManager       |
 
-Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, PATCH, DELETE as per the API). See `config/dynamic/routes.yml` for the full list.
+Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, PATCH, DELETE as per the API). The `catalog-item-instances` prefix also covers AEP custom methods such as `POST /api/v1alpha1/catalog-item-instances/{id}:rehydrate`. See `config/dynamic/routes.yml` for the full list.
 
 **Health:** Backend health is exposed through the gateway. Use `GET /api/v1alpha1/health/providers`, `/health/catalog`, `/health/policies`, `/health/placement` to check each manager (e.g. `curl http://localhost:9080/api/v1alpha1/health/catalog`). Traefik also exposes `GET /ping` for the gateway process only.
 
