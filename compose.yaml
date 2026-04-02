@@ -1,5 +1,8 @@
 # DCM API Gateway and managers. Manager images are pulled from quay.io/dcm-project.
 #
+# Image versions: each manager defaults to :latest. Pin specific versions by
+# setting <SERVICE>_VERSION in .env (see .env.example).
+#
 # Credentials: set POSTGRES_USER and POSTGRES_PASSWORD in the environment or in
 # a .env file (see .env.example). Defaults are for local dev only.
 
@@ -65,7 +68,7 @@ services:
       - policy_policies:/policies
 
   service-provider-manager:
-    image: quay.io/dcm-project/service-provider-manager:latest
+    image: quay.io/dcm-project/service-provider-manager:${SERVICE_PROVIDER_MANAGER_VERSION:-latest}
     pull_policy: always
     environment:
       <<: *db-common
@@ -79,7 +82,7 @@ services:
       nats: { condition: service_started }
 
   catalog-manager:
-    image: quay.io/dcm-project/catalog-manager:latest
+    image: quay.io/dcm-project/catalog-manager:${CATALOG_MANAGER_VERSION:-latest}
     pull_policy: always
     environment:
       <<: *db-common
@@ -92,7 +95,7 @@ services:
       postgres: { condition: service_healthy }
 
   policy-manager:
-    image: quay.io/dcm-project/policy-manager:latest
+    image: quay.io/dcm-project/policy-manager:${POLICY_MANAGER_VERSION:-latest}
     pull_policy: always
     environment:
       <<: *db-common
@@ -111,7 +114,7 @@ services:
   kubevirt-service-provider:
     container_name: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
     profiles: ["providers", "kubevirt"]
-    image: quay.io/dcm-project/kubevirt-service-provider:latest
+    image: quay.io/dcm-project/kubevirt-service-provider:${KUBEVIRT_SERVICE_PROVIDER_VERSION:-latest}
     pull_policy: always
     environment:
       NATS_URL: "nats://nats:4222"
@@ -126,7 +129,7 @@ services:
       service-provider-manager: { condition: service_started }
 
   placement-manager:
-    image: quay.io/dcm-project/placement-manager:latest
+    image: quay.io/dcm-project/placement-manager:${PLACEMENT_MANAGER_VERSION:-latest}
     pull_policy: always
     environment:
       <<: *db-common
@@ -141,7 +144,7 @@ services:
 
   k8s-container-service-provider:
     profiles: ["providers", "k8s-container"]
-    image: quay.io/dcm-project/k8s-container-service-provider:latest
+    image: quay.io/dcm-project/k8s-container-service-provider:${K8S_CONTAINER_SERVICE_PROVIDER_VERSION:-latest}
     pull_policy: always
     environment:
       SP_NAME: ${K8S_CONTAINER_SP_NAME:-k8s-container-provider}

@@ -99,3 +99,11 @@ podman-compose down -v
 | `K8S_CONTAINER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the k8s-container-service-provider|
 | `K8S_CONTAINER_SP_NAMESPACE` | `default` | Kubernetes namespace for k8s containers |
 | `K8S_CONTAINER_SP_NAME` | `k8s-container-provider` | Provider name for the k8s-container-service-provider |
+| `SERVICE_PROVIDER_MANAGER_VERSION` | `latest` | Image tag for service-provider-manager |
+| `CATALOG_MANAGER_VERSION` | `latest` | Image tag for catalog-manager |
+| `POLICY_MANAGER_VERSION` | `latest` | Image tag for policy-manager |
+| `PLACEMENT_MANAGER_VERSION` | `latest` | Image tag for placement-manager |
+| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | `latest` | Image tag for kubevirt-service-provider |
+| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | `latest` | Image tag for k8s-container-service-provider |
+
+See [Image versions](README.md#image-versions) in the README for available tag formats and how to update.
