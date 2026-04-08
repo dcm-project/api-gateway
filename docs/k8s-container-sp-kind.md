@@ -68,6 +68,22 @@ export K8S_CONTAINER_SP_KUBECONFIG="$(pwd)/kubeconfig.yaml"
 podman-compose --profile k8s-container up -d
 ```
 
+### External service type
+
+The SP requires `SP_K8S_EXTERNAL_SVC_TYPE` to determine the Kubernetes Service
+type for ports with `external` visibility. Valid values:
+
+| Value | Use case |
+|---|---|
+| `NodePort` | Default. Works out of the box with Kind and bare-metal clusters. |
+| `LoadBalancer` | Cloud environments with a load-balancer controller (e.g., AWS, GCP) or clusters running MetalLB. |
+
+The compose file defaults to `NodePort`. Override it with:
+
+```bash
+export K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE=LoadBalancer
+```
+
 ## Why this is needed
 
 | Problem | Cause |

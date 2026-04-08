@@ -43,10 +43,11 @@ podman-compose --profile k8s-container up -d
 
 If using Kind, see [K8s Container SP with Kind](docs/k8s-container-sp-kind.md) for additional network setup.
 
-Optionally override the provider name:
+Optionally override the provider name or external service type:
 
 ```bash
 export K8S_CONTAINER_SP_NAME=my-provider
+export K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE=LoadBalancer
 ```
 
 ### All providers
@@ -99,3 +100,4 @@ podman-compose down -v
 | `K8S_CONTAINER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the k8s-container-service-provider|
 | `K8S_CONTAINER_SP_NAMESPACE` | `default` | Kubernetes namespace for k8s containers |
 | `K8S_CONTAINER_SP_NAME` | `k8s-container-provider` | Provider name for the k8s-container-service-provider |
+| `K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE` | `NodePort` | Kubernetes Service type for external ports (`NodePort` or `LoadBalancer`) |
