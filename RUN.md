@@ -8,7 +8,7 @@
 
 ## Quick start
 
-Start all core services (gateway, postgres, nats, opa, and all managers):
+Start all core services (gateway, postgres, nats, and all managers):
 
 ```bash
 podman-compose up -d

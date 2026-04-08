@@ -54,16 +54,6 @@ services:
     volumes:
       - nats_data:/data
 
-  opa:
-    image: docker.io/openpolicyagent/opa:latest-static
-    pull_policy: always
-    command:
-      - "run"
-      - "--server"
-      - "--addr=0.0.0.0:8181"
-    volumes:
-      - policy_policies:/policies
-
   service-provider-manager:
     image: quay.io/dcm-project/service-provider-manager:latest
     pull_policy: always
@@ -99,14 +89,10 @@ services:
       BIND_ADDRESS: ":8080"
       LOG_LEVEL: info
       DB_NAME: policy-manager
-      OPA_URL: "http://opa:8181"
-      OPA_TIMEOUT: "10s"
     expose:
       - "8080"
     depends_on:
       postgres: { condition: service_healthy }
-      opa:
-        condition: service_started
 
   kubevirt-service-provider:
     container_name: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
@@ -161,4 +147,3 @@ services:
 volumes:
   postgres_data: {}
   nats_data: {}
-  policy_policies: {}
