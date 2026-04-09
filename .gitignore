@@ -1,2 +1,4 @@
 # Compose: local credential overrides
 .env
+
+.idea
