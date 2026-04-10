@@ -157,6 +157,8 @@ services:
       SP_CLUSTER_NAMESPACE: ${ACM_CLUSTER_SP_NAMESPACE:-default}
       SP_BASE_DOMAIN: ${ACM_CLUSTER_SP_BASE_DOMAIN}
       SP_PULL_SECRET: ${ACM_CLUSTER_SP_PULL_SECRET}
+      # BareMetal platform only — not used by KubeVirt.
+      # Can be omitted when SP_ENABLED_PLATFORMS=kubevirt.
       SP_DEFAULT_INFRA_ENV: ${ACM_CLUSTER_SP_DEFAULT_INFRA_ENV}
       SP_AGENT_NAMESPACE: ${ACM_CLUSTER_SP_AGENT_NAMESPACE}
       KUBECONFIG: /kubeconfig
