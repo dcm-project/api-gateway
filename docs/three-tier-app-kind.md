@@ -20,7 +20,7 @@ Verify the setup:
 curl -s http://localhost:9080/api/v1alpha1/health/providers | jq .
 ```
 
-The response should include `k8s-container-provider` in the list of available providers.
+> **Note:** The response should include `k8s-container-provider` in the list of available providers.
 
 ### 1. Add the three-tier-demo-service-provider to compose.yaml
 
@@ -44,10 +44,12 @@ Verify it is running:
 podman-compose ps | grep three-tier
 ```
 
+> **Note:** Ensure the k8s-container-service-provider is also running, as the three-tier SP depends on it.
+
 Check the SP is registered with DCM:
 
 ```bash
-curl -s http://localhost:9080/api/v1alpha1/health/providers | jq '.data[] | select(.name | contains("three-tier"))'
+curl -s http://localhost:9080/api/v1alpha1/health/providers | jq .
 ```
 
 ### 3. Provision a Pet Clinic application
@@ -129,13 +131,15 @@ The Pet Clinic application runs inside the Kind cluster and is accessible via:
 - **From containers on the compose network:** Use the Kubernetes service DNS name (e.g., `petclinic.default.svc.cluster.local`).
 - **From the host:** Use the NodePort or LoadBalancer endpoint exposed by Kubernetes. This depends on the `SP_K8S_EXTERNAL_SVC_TYPE` setting (see [k8s-container-sp-kind.md](k8s-container-sp-kind.md#external-service-type)).
 
+> **Tip:** Set `SP_K8S_EXTERNAL_SVC_TYPE=LoadBalancer` and use `kubectl get svc` to find the endpoint.
+
 ## Why this is needed
+
+The three-tier SP integrates with the DCM platform to expose Pet Clinic as a managed service,
+enabling declarative provisioning and lifecycle management through the API gateway.
 
 | Problem | Cause |
 |---|---|
 | Three-tier SP cannot provision apps without k8s-container-service-provider | The three-tier SP is a high-level orchestration layer that delegates resource provisioning to a k8s-container-service-provider |
 | App is unreachable from the host | The app runs inside the Kind cluster, which is on a separate Podman network |
 | Deployment hangs or fails | Missing environment variables or unhealthy dependencies (NATS, Postgres, k8s-container-service-provider) |
-
-The three-tier SP integrates with the DCM platform to expose Pet Clinic as a managed service,
-enabling declarative provisioning and lifecycle management through the API gateway.
