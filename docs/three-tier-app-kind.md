@@ -22,17 +22,7 @@ curl -s http://localhost:9080/api/v1alpha1/health/providers | jq .
 
 > **Note:** The response should include `k8s-container-provider` in the list of available providers.
 
-### 1. Add the three-tier-demo-service-provider to compose.yaml
-
-The compose file must include the `three-tier-demo-service-provider` service under a `three-tier` profile.
-See the `compose.yaml` for the service definition. The service:
-
-- Uses `quay.io/gciavarrini/three-tier-demo-service-provider:dev` as the image
-- Depends on `k8s-container-service-provider`, `postgres`, and `nats`
-- Mounts the same kubeconfig as the k8s-container-service-provider
-- Exposes port 8080 for DCM integration
-
-### 2. Start the three-tier SP
+### 1. Start the three-tier SP
 
 ```bash
 podman-compose --profile three-tier up -d
@@ -49,10 +39,10 @@ podman-compose ps | grep three-tier
 Check the SP is registered with DCM:
 
 ```bash
-curl -s http://localhost:9080/api/v1alpha1/health/providers | jq .
+curl -s http://localhost:9080/api/v1alpha1/providers | jq '.providers[] | select(.name | contains("three-tier"))'
 ```
 
-### 3. Provision a Pet Clinic application
+### 2. Provision a Pet Clinic application
 
 Use the DCM Service Provider Manager API to provision a Pet Clinic app.
 
@@ -76,7 +66,7 @@ curl -X POST http://localhost:9080/api/v1alpha1/service-type-instances \
   }'
 ```
 
-### 4. Verify the Pet Clinic application is running
+### 3. Verify the Pet Clinic application is running
 
 Monitor the Pet Clinic deployment in Kubernetes:
 
