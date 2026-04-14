@@ -44,27 +44,37 @@ curl -s http://localhost:9080/api/v1alpha1/providers | jq '.providers[] | select
 
 ### 2. Provision a Pet Clinic application
 
-Use the DCM Service Provider Manager API to provision a Pet Clinic app.
+> **Important:** Users are not supposed to create service-type-instances on their own. The API Gateway only supports GET on the `/api/v1alpha1/service-type-instances` endpoint. Instead, you must create a CatalogItemInstance based on a pre-seeded CatalogItem.
 
-First, check available service types:
+First, list available catalog items to find the Pet Clinic offering:
 
 ```bash
-curl -s http://localhost:9080/api/v1alpha1/service-types | jq .
+curl -s http://localhost:9080/api/v1alpha1/catalog-items | jq .
 ```
 
-Find the Pet Clinic service type offered by the three-tier SP. Then provision an instance:
+> **Note:** Look for a catalog item with a `display_name` that indicates a Pet Clinic service. Note its `uid` value.
+
+Then provision an instance by creating a CatalogItemInstance:
 
 ```bash
-curl -X POST http://localhost:9080/api/v1alpha1/service-type-instances \
+curl -X POST http://localhost:9080/api/v1alpha1/catalog-item-instances \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "my-petclinic",
-    "service_type_id": "<service-type-id>",
-    "properties": {
-      "app_name": "petclinic"
+    "api_version": "v1alpha1",
+    "display_name": "my-petclinic",
+    "spec": {
+      "catalog_item_id": "<catalog-item-uid>",
+      "user_values": [
+        {
+          "path": "app_name",
+          "value": "petclinic"
+        }
+      ]
     }
   }'
 ```
+
+> **Tip:** Replace `<catalog-item-uid>` with the uid from the catalog-items list above. You can customize additional fields by adding more entries to the `user_values` array if needed.
 
 ### 3. Verify the Pet Clinic application is running
 
