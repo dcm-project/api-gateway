@@ -44,8 +44,6 @@ curl -s http://localhost:9080/api/v1alpha1/providers | jq '.providers[] | select
 
 ### 2. Provision a Pet Clinic application
 
-> **Important:** Users are not supposed to create service-type-instances on their own. The API Gateway only supports GET on the `/api/v1alpha1/service-type-instances` endpoint. Instead, you must create a CatalogItemInstance based on a pre-seeded CatalogItem.
-
 First, list available catalog items to find the Pet Clinic offering:
 
 ```bash
