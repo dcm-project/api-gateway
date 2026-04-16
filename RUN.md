@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- [Podman](https://podman.io/) and `podman-compose` installed
+- [Podman](https://podman.io/) or [Docker](https://www.docker.com/) (the Makefile auto-detects which engine is available)
 - (Optional) A Kubernetes cluster with KubeVirt for the kubevirt-service-provider
 - (Optional) A Kubernetes cluster for the k8s-container-service-provider
 - (Optional) An OpenShift cluster with ACM/MCE and HyperShift for the acm-cluster-service-provider
@@ -12,7 +12,7 @@
 Start all core services (gateway, postgres, nats, and all managers):
 
 ```bash
-podman-compose up -d
+make run
 ```
 
 The API gateway will be available at `http://localhost:9080`.
@@ -29,7 +29,7 @@ activate the `kubevirt` profile:
 ```bash
 export KUBERNETES_NAMESPACE=vms
 export KUBERNETES_KUBECONFIG="/path/to/kubeconfig"
-podman-compose --profile kubevirt up -d
+make run-with-providers PROFILES=kubevirt
 ```
 
 ### K8s container service provider
@@ -39,7 +39,7 @@ activate the `k8s-container` profile:
 
 ```bash
 export K8S_CONTAINER_SP_KUBECONFIG="/path/to/kubeconfig"
-podman-compose --profile k8s-container up -d
+make run-with-providers PROFILES=k8s-container
 ```
 
 If using Kind, see [K8s Container SP with Kind](docs/k8s-container-sp-kind.md) for additional network setup.
@@ -59,7 +59,7 @@ activate the `acm-cluster` profile:
 ```bash
 export ACM_CLUSTER_SP_KUBECONFIG="/path/to/kubeconfig"
 export ACM_CLUSTER_SP_PULL_SECRET="<base64-encoded-dockerconfigjson>"
-podman-compose --profile acm-cluster up -d
+make run-with-providers PROFILES=acm-cluster
 ```
 
 Optionally override the provider name, namespace, or base domain:
@@ -79,7 +79,7 @@ export ACM_CLUSTER_SP_AGENT_NAMESPACE="my-agent-namespace"
 
 ### All providers
 
-To start all providers at once, use the `providers` profile:
+To start all providers at once, set the required environment variables and run:
 
 ```bash
 export KUBERNETES_KUBECONFIG="/path/to/kubeconfig"
@@ -89,7 +89,15 @@ export ACM_CLUSTER_SP_PULL_SECRET="<base64-encoded-dockerconfigjson>"
 # BareMetal only:
 export ACM_CLUSTER_SP_DEFAULT_INFRA_ENV="my-infra-env"
 export ACM_CLUSTER_SP_AGENT_NAMESPACE="my-agent-namespace"
-podman-compose --profile providers up -d
+make run-with-providers
+```
+
+This defaults to the `providers` Compose profile (all service providers). To start a single provider instead, pass `PROFILES=`:
+
+```bash
+make run-with-providers PROFILES=kubevirt
+make run-with-providers PROFILES=k8s-container
+make run-with-providers PROFILES=acm-cluster
 ```
 
 ## Verifying the deployment
@@ -97,7 +105,7 @@ podman-compose --profile providers up -d
 Check that all services are running:
 
 ```bash
-podman-compose ps
+podman compose ps    # or: docker compose ps
 ```
 
 Check health endpoints through the gateway:
@@ -112,13 +120,7 @@ curl http://localhost:9080/api/v1alpha1/health/placement
 ## Stopping services
 
 ```bash
-podman-compose down
-```
-
-To also remove volumes (databases, NATS data):
-
-```bash
-podman-compose down -v
+make compose-down
 ```
 
 ## Configuration

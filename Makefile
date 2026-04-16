@@ -1,10 +1,11 @@
-.PHONY: validate-config run run-gateway-only run-gateway-only-container check-config compose-down clean
+.PHONY: validate-config run run-with-providers run-gateway-only run-gateway-only-container check-config compose-down clean
 
 ENGINE ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || \
 	(command -v docker >/dev/null 2>&1 && echo docker || \
 	(echo "podman")))
 
 TRAEFIK_CONFIG ?= config/traefik.yml
+PROFILES ?= providers
 
 # Validate Traefik gateway config
 validate-config: check-config
@@ -21,6 +22,10 @@ check-config:
 # Run full stack (gateway + managers) via Compose. Pulls images and starts the stack.
 run:
 	$(ENGINE) compose up -d
+
+# Run full stack with service providers. Defaults to all providers; override with PROFILES=kubevirt, etc.
+run-with-providers:
+	$(ENGINE) compose --profile $(PROFILES) up -d
 
 # Run only the gateway binary on the host (no Compose, no managers). Use when backends are elsewhere or for quick config checks.
 run-gateway-only:
