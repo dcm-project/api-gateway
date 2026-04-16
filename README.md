@@ -30,14 +30,22 @@ flowchart LR
 make validate-config
 ```
 
-### Run locally (full stack)
+### Run locally (gateway and managers)
 
-From the `api-gateway` directory, pull the manager images from `quay.io/dcm-project` and start the full stack via Compose:
+From the `api-gateway` directory, start the **default** Compose stack:
 
 ```bash
 cd api-gateway
 make run
 ```
+
+`make run` is equivalent to `podman compose up -d` or `docker compose up -d` (whichever engine you use). 
+It starts **Traefik**, **PostgreSQL**, **NATS**, and the four **managers** (ServiceProviderManager, CatalogManager, PolicyManager, PlacementManager).
+
+It does **not** start the optional **service provider** containers (`kubevirt-service-provider`, `k8s-container-service-provider`, `acm-cluster-service-provider`). 
+Those services are declared with [Compose profiles](https://docs.docker.com/compose/how-tos/profiles/) in `compose.yaml` (`kubevirt`, `k8s-container`, `acm-cluster`, or `providers`
+for all of them), so they only run when you pass `--profile`. 
+See [RUN.md — Running with service providers](RUN.md#running-with-service-providers) for required environment variables and provider-specific setup.
 
 The gateway is at `http://localhost:9080`. Stop with `make compose-down`. To run only the gateway binary on the host (no Compose, e.g. when backends are elsewhere), use `make run-gateway-only`.
 
@@ -77,9 +85,9 @@ Omitting a variable (or leaving it commented out) defaults to `main`.
 | `CATALOG_MANAGER_VERSION` | catalog-manager |
 | `POLICY_MANAGER_VERSION` | policy-manager |
 | `PLACEMENT_MANAGER_VERSION` | placement-manager |
-| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | kubevirt-service-provider |
-| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | k8s-container-service-provider |
-| `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | acm-cluster-service-provider |
+| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | kubevirt-service-provider (`kubevirt` or `providers` profile) |
+| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | k8s-container-service-provider (`k8s-container` or `providers` profile) |
+| `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | acm-cluster-service-provider (`acm-cluster` or `providers` profile) |
 
 #### How to check deployed versions
 
@@ -98,7 +106,8 @@ podman compose config | grep "quay.io/dcm-project"
    ```
 3. Restart the stack to pull the new image:
    ```bash
-   make run
+   make run                    # core stack (gateway + managers)
+   make run-with-providers     # or, if running with service providers
    ```
 
 ### Gateway configuration
@@ -128,7 +137,7 @@ Then mount the ConfigMap into the Traefik pod at `/etc/traefik/traefik.yml` and 
 
 ### Testing locally
 
-1. **Validate and start the full stack**
+1. **Validate and start the core stack (gateway + managers)**
    ```bash
    make validate-config
    make run
@@ -140,8 +149,9 @@ Then mount the ConfigMap into the Traefik pod at `/etc/traefik/traefik.yml` and 
    ```bash
    curl -s http://localhost:9080/ping
    ```
-3. **Full test (gateway + backends)**
-   After `make run`, try e.g. `curl -s http://localhost:9080/api/v1alpha1/health/providers`. Stop with `make compose-down`.
+3. **Health checks (gateway + managers)**
+   After `make run`, the health endpoints only cover the four managers that are part of the default stack. 
+   For example: `curl -s http://localhost:9080/api/v1alpha1/health/providers`. Stop with `make compose-down`. 
 
 ## Route mapping
 
