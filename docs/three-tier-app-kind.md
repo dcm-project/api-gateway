@@ -24,17 +24,27 @@ curl -s http://localhost:9080/api/v1alpha1/health/providers | jq .
 
 ### 1. Start the three-tier SP
 
+Using the Makefile (recommended):
+
 ```bash
+make run-three-tier
+```
+
+Or manually with podman-compose:
+
+```bash
+export K8S_CONTAINER_SP_KUBECONFIG="$(pwd)/kubeconfig.yaml"
 podman-compose --profile three-tier up -d
 ```
+
+> **Note:** The three-tier profile automatically includes the k8s-container-service-provider 
+> as a dependency. Both services will start together.
 
 Verify it is running:
 
 ```bash
-podman-compose ps | grep three-tier
+podman ps --format "table {{.Names}}\t{{.Status}}" | grep -E 'three-tier|k8s-container'
 ```
-
-> **Note:** Ensure the k8s-container-service-provider is also running, as the three-tier SP depends on it.
 
 Check the SP is registered with DCM:
 

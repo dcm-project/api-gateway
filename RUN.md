@@ -77,6 +77,25 @@ export ACM_CLUSTER_SP_DEFAULT_INFRA_ENV="my-infra-env"
 export ACM_CLUSTER_SP_AGENT_NAMESPACE="my-agent-namespace"
 ```
 
+### Three-tier demo app service provider
+
+The three-tier service provider provisions Pet Clinic applications into a Kubernetes cluster.
+It depends on the k8s-container-service-provider and follows the same setup requirements.
+
+Prerequisites:
+1. Complete the k8s-container setup (steps 1-5 from [K8s Container SP with Kind](docs/k8s-container-sp-kind.md))
+
+Makefile target:
+
+```bash
+make run-three-tier
+```
+
+For the full setup and usage guide, see [Three-Tier Demo App with Kind](docs/three-tier-app-kind.md).
+
+> **Note:** The three-tier profile automatically includes the k8s-container provider.
+> To deploy only k8s-container without three-tier, use `--profile k8s-container` or `make run-k8s-container`.
+
 ### All providers
 
 To start all providers at once, set the required environment variables and run:
@@ -149,5 +168,6 @@ make compose-down
 | `KUBEVIRT_SERVICE_PROVIDER_VERSION` | `main` | Image tag for kubevirt-service-provider |
 | `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for k8s-container-service-provider |
 | `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for acm-cluster-service-provider |
-
 See [Image versions](README.md#image-versions) in the README for available tag formats and how to update.
+| `THREE_TIER_SP_NAME` | `three-tier-provider` | Provider name for the three-tier-demo-service-provider |
+| `THREE_TIER_SP_NAMESPACE` | `default` | Kubernetes namespace for three-tier applications |

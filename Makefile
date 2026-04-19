@@ -1,4 +1,4 @@
-.PHONY: validate-config run run-with-providers run-gateway-only run-gateway-only-container check-config compose-down clean
+.PHONY: validate-config run run-k8s-container run-three-tier run-all-providers run-gateway-only run-gateway-only-container check-config compose-down clean
 
 ENGINE ?= $(shell command -v podman >/dev/null 2>&1 && echo podman || \
 	(command -v docker >/dev/null 2>&1 && echo docker || \
@@ -23,9 +23,20 @@ check-config:
 run:
 	$(ENGINE) compose up -d
 
-# Run full stack with service providers. Defaults to all providers; override with PROFILES=kubevirt, etc.
-run-with-providers:
-	$(ENGINE) compose --profile $(PROFILES) up -d
+# Run with k8s-container service provider
+run-k8s-container:
+	@test -f kubeconfig.yaml || { echo "Error: kubeconfig.yaml not found. Follow docs/k8s-container-sp-kind.md steps 1-4 first."; exit 1; }
+	K8S_CONTAINER_SP_KUBECONFIG="$(PWD)/kubeconfig.yaml" $(ENGINE) compose --profile k8s-container up -d
+
+# Run with three-tier demo app service provider (includes k8s-container dependency)
+run-three-tier:
+	@test -f kubeconfig.yaml || { echo "Error: kubeconfig.yaml not found. Follow docs/k8s-container-sp-kind.md steps 1-4 first."; exit 1; }
+	K8S_CONTAINER_SP_KUBECONFIG="$(PWD)/kubeconfig.yaml" $(ENGINE) compose --profile three-tier up -d
+
+# Run all service providers
+run-all-providers:
+	@test -f kubeconfig.yaml || { echo "Error: kubeconfig.yaml not found. See docs/ for provider setup."; exit 1; }
+	K8S_CONTAINER_SP_KUBECONFIG="$(PWD)/kubeconfig.yaml" $(ENGINE) compose --profile providers up -d
 
 # Run only the gateway binary on the host (no Compose, no managers). Use when backends are elsewhere or for quick config checks.
 run-gateway-only:

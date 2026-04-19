@@ -129,7 +129,7 @@ services:
       postgres: { condition: service_healthy }
 
   k8s-container-service-provider:
-    profiles: ["providers", "k8s-container"]
+    profiles: ["providers", "k8s-container", "three-tier"]
     image: quay.io/dcm-project/k8s-container-service-provider:${K8S_CONTAINER_SERVICE_PROVIDER_VERSION:-main}
     pull_policy: always
     environment:
