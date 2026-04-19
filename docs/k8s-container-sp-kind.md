@@ -19,8 +19,11 @@ If you use `--name <name>`, the container will be `<name>-control-plane`.
 This must be done **before** step 3 so the compose network exists.
 
 ```bash
-podman-compose --profile k8s-container up -d
+podman compose up -d
 ```
+
+> **Note:** We start only core services here (not the k8s-container provider yet)
+> to create the network. The provider will be started in step 5.
 
 ### 3. Connect Kind to the compose network
 
@@ -40,11 +43,11 @@ Use `kubernetes` as the alias (short, always present in the SAN list):
 ```bash
 podman network connect \
   --alias kubernetes \
-  api-gateway_default \
+  api-gateway-srv-container_default \
   kind-control-plane
 ```
 
-> **Note:** the network name `api-gateway_default` is derived from the
+> **Note:** the network name `api-gateway-srv-container_default` is derived from the
 > project directory name. Verify with `podman network ls`.
 
 ### 4. Generate a kubeconfig that uses the alias
@@ -58,14 +61,20 @@ kubectl config view --minify --flatten --context kind-kind \
 Kind maps the API server to a random host port (e.g. `44615`), but
 container-to-container traffic uses port `6443` directly.
 
-### 5. Point the SP to the generated kubeconfig
+### 5. Start the k8s-container service provider
 
-The compose file mounts `${K8S_CONTAINER_SP_KUBECONFIG:-~/.kube/config}` into the
-SP container. Set the variable to the generated file and restart:
+The Makefile target automatically validates the kubeconfig and sets the required
+environment variable:
+
+```bash
+make run-k8s-container
+```
+
+Or manually:
 
 ```bash
 export K8S_CONTAINER_SP_KUBECONFIG="$(pwd)/kubeconfig.yaml"
-podman-compose --profile k8s-container up -d
+podman compose --profile k8s-container up -d
 ```
 
 ### External service type
