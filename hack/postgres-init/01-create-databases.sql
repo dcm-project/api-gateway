@@ -3,3 +3,4 @@ CREATE DATABASE "service-provider";
 CREATE DATABASE "policy-manager";
 CREATE DATABASE "catalog-manager";
 CREATE DATABASE "placement-manager";
+CREATE DATABASE "three-tier-sp";
