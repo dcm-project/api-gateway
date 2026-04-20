@@ -173,6 +173,17 @@ services:
       service-provider-manager: { condition: service_started }
       nats: { condition: service_started }
 
+  dcm-ui:
+    image: quay.io/dcm-project/dcm-ui:latest
+    pull_policy: always
+    ports:
+      - "7007:7007"
+    environment:
+      APP_BASE_URL: ${BACKSTAGE_BASE_URL:-http://localhost:7007}
+      DCM_API_GATEWAY_URL: http://gateway:9080
+    depends_on:
+      gateway: { condition: service_started }
+
 volumes:
   postgres_data: {}
   nats_data: {}
