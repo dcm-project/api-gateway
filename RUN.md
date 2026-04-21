@@ -117,6 +117,12 @@ curl http://localhost:9080/api/v1alpha1/health/policies
 curl http://localhost:9080/api/v1alpha1/health/placement
 ```
 
+Check health endpoint through DCM UI:
+
+```bash
+curl http://localhost:7007/api/dcm/health
+```
+
 ## Stopping services
 
 ```bash
@@ -125,29 +131,29 @@ make compose-down
 
 ## Configuration
 
-| Variable | Default | Description |
-|---|---|---|
-| `POSTGRES_USER` | `admin` | PostgreSQL username |
-| `POSTGRES_PASSWORD` | `adminpass` | PostgreSQL password |
-| `KUBERNETES_NAMESPACE` | `default` | Kubernetes namespace for KubeVirt VMs |
-| `KUBERNETES_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host |
-| `K8S_CONTAINER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the k8s-container-service-provider|
-| `K8S_CONTAINER_SP_NAMESPACE` | `default` | Kubernetes namespace for k8s containers |
-| `K8S_CONTAINER_SP_NAME` | `k8s-container-provider` | Provider name for the k8s-container-service-provider |
-| `K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE` | `NodePort` | Kubernetes Service type for external ports (`NodePort` or `LoadBalancer`) |
-| `ACM_CLUSTER_SP_KUBECONFIG` | `~/.kube/config` | Path to kubeconfig on the host for the acm-cluster-service-provider |
-| `ACM_CLUSTER_SP_NAMESPACE` | `default` | Kubernetes namespace for ACM hosted clusters |
-| `ACM_CLUSTER_SP_NAME` | `acm-cluster-sp` | Provider name for the acm-cluster-service-provider |
-| `ACM_CLUSTER_SP_BASE_DOMAIN` | *(none)* | Base DNS domain for hosted clusters; can be overridden per-request via `provider_hints.acm.base_domain` |
-| `ACM_CLUSTER_SP_PULL_SECRET` | *(required)* | Base64-encoded dockerconfigjson pull secret for ACM hosted clusters |
-| `ACM_CLUSTER_SP_DEFAULT_INFRA_ENV` | *(none)* | **BareMetal only.** Default InfraEnv name; can be overridden per-request via `provider_hints.acm.infra_env` |
-| `ACM_CLUSTER_SP_AGENT_NAMESPACE` | *(none)* | **BareMetal only.** Namespace where Agent resources are located |
-| `SERVICE_PROVIDER_MANAGER_VERSION` | `main` | Image tag for service-provider-manager |
-| `CATALOG_MANAGER_VERSION` | `main` | Image tag for catalog-manager |
-| `POLICY_MANAGER_VERSION` | `main` | Image tag for policy-manager |
-| `PLACEMENT_MANAGER_VERSION` | `main` | Image tag for placement-manager |
-| `KUBEVIRT_SERVICE_PROVIDER_VERSION` | `main` | Image tag for kubevirt-service-provider |
-| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for k8s-container-service-provider |
-| `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | `main` | Image tag for acm-cluster-service-provider |
+| Variable                                 | Default                  | Description                                                                                                 |
+| ---------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_USER`                          | `admin`                  | PostgreSQL username                                                                                         |
+| `POSTGRES_PASSWORD`                      | `adminpass`              | PostgreSQL password                                                                                         |
+| `KUBERNETES_NAMESPACE`                   | `default`                | Kubernetes namespace for KubeVirt VMs                                                                       |
+| `KUBERNETES_KUBECONFIG`                  | `~/.kube/config`         | Path to kubeconfig on the host                                                                              |
+| `K8S_CONTAINER_SP_KUBECONFIG`            | `~/.kube/config`         | Path to kubeconfig on the host for the k8s-container-service-provider                                       |
+| `K8S_CONTAINER_SP_NAMESPACE`             | `default`                | Kubernetes namespace for k8s containers                                                                     |
+| `K8S_CONTAINER_SP_NAME`                  | `k8s-container-provider` | Provider name for the k8s-container-service-provider                                                        |
+| `K8S_CONTAINER_SP_EXTERNAL_SVC_TYPE`     | `NodePort`               | Kubernetes Service type for external ports (`NodePort` or `LoadBalancer`)                                   |
+| `ACM_CLUSTER_SP_KUBECONFIG`              | `~/.kube/config`         | Path to kubeconfig on the host for the acm-cluster-service-provider                                         |
+| `ACM_CLUSTER_SP_NAMESPACE`               | `default`                | Kubernetes namespace for ACM hosted clusters                                                                |
+| `ACM_CLUSTER_SP_NAME`                    | `acm-cluster-sp`         | Provider name for the acm-cluster-service-provider                                                          |
+| `ACM_CLUSTER_SP_BASE_DOMAIN`             | _(none)_                 | Base DNS domain for hosted clusters; can be overridden per-request via `provider_hints.acm.base_domain`     |
+| `ACM_CLUSTER_SP_PULL_SECRET`             | _(required)_             | Base64-encoded dockerconfigjson pull secret for ACM hosted clusters                                         |
+| `ACM_CLUSTER_SP_DEFAULT_INFRA_ENV`       | _(none)_                 | **BareMetal only.** Default InfraEnv name; can be overridden per-request via `provider_hints.acm.infra_env` |
+| `ACM_CLUSTER_SP_AGENT_NAMESPACE`         | _(none)_                 | **BareMetal only.** Namespace where Agent resources are located                                             |
+| `SERVICE_PROVIDER_MANAGER_VERSION`       | `main`                   | Image tag for service-provider-manager                                                                      |
+| `CATALOG_MANAGER_VERSION`                | `main`                   | Image tag for catalog-manager                                                                               |
+| `POLICY_MANAGER_VERSION`                 | `main`                   | Image tag for policy-manager                                                                                |
+| `PLACEMENT_MANAGER_VERSION`              | `main`                   | Image tag for placement-manager                                                                             |
+| `KUBEVIRT_SERVICE_PROVIDER_VERSION`      | `main`                   | Image tag for kubevirt-service-provider                                                                     |
+| `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | `main`                   | Image tag for k8s-container-service-provider                                                                |
+| `ACM_CLUSTER_SERVICE_PROVIDER_VERSION`   | `main`                   | Image tag for acm-cluster-service-provider                                                                  |
 
 See [Image versions](README.md#image-versions) in the README for available tag formats and how to update.

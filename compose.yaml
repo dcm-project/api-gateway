@@ -179,7 +179,7 @@ services:
     ports:
       - "7007:7007"
     environment:
-      APP_BASE_URL: ${BACKSTAGE_BASE_URL:-http://localhost:7007}
+      APP_BASE_URL: http://localhost:7007
       DCM_API_GATEWAY_URL: http://gateway:9080
     depends_on:
       gateway: { condition: service_started }
