@@ -174,7 +174,7 @@ services:
       nats: { condition: service_started }
 
   dcm-ui:
-    image: quay.io/dcm-project/dcm-ui:main
+    image: quay.io/dcm-project/dcm-ui:${DCM_UI_VERSION:-main}
     pull_policy: always
     ports:
       - "7007:7007"
