@@ -181,6 +181,7 @@ make compose-down
 | `K8S_CONTAINER_SERVICE_PROVIDER_VERSION`   | `main`                      | Image tag for k8s-container-service-provider                                                                |
 | `ACM_CLUSTER_SERVICE_PROVIDER_VERSION`     | `main`                      | Image tag for acm-cluster-service-provider                                                                  |
 | `THREE_TIER_DEMO_SERVICE_PROVIDER_VERSION` | `main`                      | Image tag for three-tier-demo-service-provider                                                              |
-| `THREE_TIER_SP_NAME`                       | `three-tier-provider`      | Provider name for the three-tier-demo-service-provider                                                       |
+| `THREE_TIER_SP_NAME`                       | `three-tier-provider`       | Provider name for the three-tier-demo-service-provider                                                      |
+| `DCM_UI_VERSION`                           | `main`                      | Image tag for dcm-ui                                                                                        |
 
 See [Image versions](README.md#image-versions) in the README for available tag formats and how to update.
