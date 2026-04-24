@@ -93,12 +93,6 @@ http:
       service: policy-manager
       entryPoints: [web]
 
-    # ── PlacementManager ──────────────────────────────────────────────
-    resources-collection:
-      rule: "Path(`/api/v1alpha1/resources`) && (Method(`GET`) || Method(`POST`))"
-      service: placement-manager
-      entryPoints: [web]
-
   middlewares:
     strip-health-suffix:
       replacePathRegex:
