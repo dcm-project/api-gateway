@@ -99,7 +99,7 @@ rego_code: |
     "rejected": false,
     "selected_provider": "three-tier-provider"
   } if {
-    input.spec.catalog_item_id == "pet-clinic"
+    input.spec.service_type == "three-tier-app-demo"
   }
 EOF
 
@@ -116,7 +116,7 @@ spec:
 EOF
 ```
 
-**`three-tier-placement.yaml`** is a placement policy so Policy Manager routes `pet-clinic` to
+**`three-tier-placement.yaml`** is a placement policy so Policy Manager routes **`three-tier-app-demo`** to
 **`three-tier-provider`**. **`my-petclinic.yaml`** is the catalog instance (Pet Clinic item and DB
 settings).
 
@@ -134,8 +134,7 @@ platform selects your three-tier provider (same `name` as in step **1**, usually
 Without it, the instance create call can fail with `policy response missing selected provider`.
 
 Rego sees the instance **`spec`** as **`input.spec`**. This example matches
-`catalog_item_id == "pet-clinic"`; other catalog items skip this policy. Adjust
-the path if your API nests `catalog_item_id` differently.
+`service_type == "three-tier-app-demo"`; other service types skip this policy.
 
 ```bash
 dcm policy create --from-file /tmp/dcm-petclinic/three-tier-placement.yaml --id three-tier-placement
@@ -162,7 +161,7 @@ curl -s -X POST 'http://localhost:9080/api/v1alpha1/policies?id=three-tier-place
   "policy_type": "GLOBAL",
   "enabled": true,
   "priority": 100,
-  "rego_code": "package policies.three_tier_default\n\nmain := {\n  \"rejected\": false,\n  \"selected_provider\": \"three-tier-provider\"\n} if {\n  input.spec.catalog_item_id == \"pet-clinic\"\n}\n"
+  "rego_code": "package policies.three_tier_default\n\nmain := {\n  \"rejected\": false,\n  \"selected_provider\": \"three-tier-provider\"\n} if {\n  input.spec.service_type == \"three-tier-app-demo\"\n}\n"
 }
 JSON
 ```
