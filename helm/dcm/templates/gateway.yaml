@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dcm.fullname" . }}-traefik-static
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+data:
+  traefik.yml: |
+    entryPoints:
+      web:
+        address: ":{{ .Values.gateway.port }}"
+    providers:
+      file:
+        directory: /etc/traefik/dynamic
+        watch: true
+    ping:
+      entryPoint: web
+    log:
+      level: INFO
+    accessLog: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "dcm.fullname" . }}-traefik-routes
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+data:
+  routes.yml: |
+    http:
+      routers:
+        # -- Health endpoints (GET only)
+        health-providers:
+          rule: "Path(`/api/v1alpha1/health/providers`) && Method(`GET`)"
+          service: service-provider-manager
+          entryPoints: [web]
+          middlewares: [strip-health-suffix]
+        health-catalog:
+          rule: "Path(`/api/v1alpha1/health/catalog`) && Method(`GET`)"
+          service: catalog-manager
+          entryPoints: [web]
+          middlewares: [strip-health-suffix]
+        health-policies:
+          rule: "Path(`/api/v1alpha1/health/policies`) && Method(`GET`)"
+          service: policy-manager
+          entryPoints: [web]
+          middlewares: [strip-health-suffix]
+        health-placement:
+          rule: "Path(`/api/v1alpha1/health/placement`) && Method(`GET`)"
+          service: placement-manager
+          entryPoints: [web]
+          middlewares: [strip-health-suffix]
+
+        # -- ServiceProviderManager
+        providers-collection:
+          rule: "Path(`/api/v1alpha1/providers`) && (Method(`GET`) || Method(`POST`))"
+          service: service-provider-manager
+          entryPoints: [web]
+        providers-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/providers/[^/:]+$`) && (Method(`GET`) || Method(`PUT`) || Method(`DELETE`))"
+          service: service-provider-manager
+          entryPoints: [web]
+        service-type-instances-collection:
+          rule: "Path(`/api/v1alpha1/service-type-instances`) && Method(`GET`)"
+          service: service-provider-manager
+          entryPoints: [web]
+        service-type-instances-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/service-type-instances/[^/:]+$`) && Method(`GET`)"
+          service: service-provider-manager
+          entryPoints: [web]
+
+        # -- CatalogManager
+        service-types-collection:
+          rule: "Path(`/api/v1alpha1/service-types`) && Method(`GET`)"
+          service: catalog-manager
+          entryPoints: [web]
+        service-types-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/service-types/[^/:]+$`) && Method(`GET`)"
+          service: catalog-manager
+          entryPoints: [web]
+        catalog-items-collection:
+          rule: "Path(`/api/v1alpha1/catalog-items`) && (Method(`GET`) || Method(`POST`))"
+          service: catalog-manager
+          entryPoints: [web]
+        catalog-items-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/catalog-items/[^/:]+$`) && (Method(`GET`) || Method(`PATCH`) || Method(`DELETE`))"
+          service: catalog-manager
+          entryPoints: [web]
+        catalog-item-instances-collection:
+          rule: "Path(`/api/v1alpha1/catalog-item-instances`) && (Method(`GET`) || Method(`POST`))"
+          service: catalog-manager
+          entryPoints: [web]
+        catalog-item-instances-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/catalog-item-instances/[^/:]+$`) && (Method(`GET`) || Method(`DELETE`))"
+          service: catalog-manager
+          entryPoints: [web]
+        catalog-item-instances-rehydrate:
+          rule: "PathRegexp(`^/api/v1alpha1/catalog-item-instances/[^/]+:rehydrate$`) && Method(`POST`)"
+          service: catalog-manager
+          entryPoints: [web]
+
+        # -- PolicyManager
+        policies-collection:
+          rule: "Path(`/api/v1alpha1/policies`) && (Method(`GET`) || Method(`POST`))"
+          service: policy-manager
+          entryPoints: [web]
+        policies-resource:
+          rule: "PathRegexp(`^/api/v1alpha1/policies/[^/:]+$`) && (Method(`GET`) || Method(`PATCH`) || Method(`DELETE`))"
+          service: policy-manager
+          entryPoints: [web]
+
+      middlewares:
+        strip-health-suffix:
+          replacePathRegex:
+            regex: "^/api/v1alpha1/health/.*"
+            replacement: "/api/v1alpha1/health"
+
+      services:
+        service-provider-manager:
+          loadBalancer:
+            servers:
+              - url: "http://{{ include "dcm.fullname" .}}-service-provider-manager:8080"
+        catalog-manager:
+          loadBalancer:
+            servers:
+              - url: "http://{{ include "dcm.fullname" .}}-catalog-manager:8080"
+        policy-manager:
+          loadBalancer:
+            servers:
+              - url: "http://{{ include "dcm.fullname" .}}-policy-manager:8080"
+        placement-manager:
+          loadBalancer:
+            servers:
+              - url: "http://{{ include "dcm.fullname" .}}-placement-manager:8080"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dcm.fullname" . }}-gateway
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+    {{- include "dcm.selectorLabels" (dict "context" . "component" "gateway") | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "dcm.selectorLabels" (dict "context" . "component" "gateway") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "dcm.selectorLabels" (dict "context" . "component" "gateway") | nindent 8 }}
+    spec:
+      containers:
+        - name: traefik
+          image: {{ .Values.gateway.image }}
+          args: ["--configFile=/etc/traefik/traefik.yml"]
+          ports:
+            - containerPort: {{ .Values.gateway.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: static-config
+              mountPath: /etc/traefik/traefik.yml
+              subPath: traefik.yml
+              readOnly: true
+            - name: dynamic-config
+              mountPath: /etc/traefik/dynamic
+              readOnly: true
+      volumes:
+        - name: static-config
+          configMap:
+            name: {{ include "dcm.fullname" . }}-traefik-static
+        - name: dynamic-config
+          configMap:
+            name: {{ include "dcm.fullname" . }}-traefik-routes
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dcm.fullname" . }}-gateway
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "dcm.selectorLabels" (dict "context" . "component" "gateway") | nindent 4 }}
+  ports:
+    - port: {{ .Values.gateway.port }}
+      targetPort: {{ .Values.gateway.port }}
+      protocol: TCP
+{{- if .Values.gateway.route.enabled }}
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "dcm.fullname" . }}-gateway
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.gateway.route.host }}
+  host: {{ .Values.gateway.route.host }}
+  {{- end }}
+  to:
+    kind: Service
+    name: {{ include "dcm.fullname" . }}-gateway
+  port:
+    targetPort: {{ .Values.gateway.port }}
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}
+{{- if .Values.gateway.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "dcm.fullname" . }}-gateway
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+  {{- with .Values.gateway.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.gateway.ingress.className }}
+  ingressClassName: {{ .Values.gateway.ingress.className }}
+  {{- end }}
+  rules:
+    - {{- if .Values.gateway.ingress.host }}
+      host: {{ .Values.gateway.ingress.host }}
+      {{- end }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "dcm.fullname" . }}-gateway
+                port:
+                  number: {{ .Values.gateway.port }}
+  {{- with .Values.gateway.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}

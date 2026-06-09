@@ -1,0 +1,102 @@
+# -- Global settings
+global:
+  imageTag: main
+
+# -- PostgreSQL
+postgres:
+  image: docker.io/library/postgres:16-alpine
+  user: admin
+  password: adminpass
+  storage: 1Gi
+
+# -- NATS
+nats:
+  image: docker.io/library/nats:2-alpine
+  storage: 1Gi
+
+# -- Traefik API gateway
+gateway:
+  image: docker.io/traefik:v3.4
+  port: 9080
+  route:
+    enabled: true
+    host: ""  # leave empty for auto-generated OpenShift hostname
+  ingress:
+    enabled: false
+    className: ""
+    host: ""
+    tls: []
+    #  - secretName: gateway-tls
+    #    hosts:
+    #      - gateway.example.com
+    annotations: {}
+
+# -- Core managers
+serviceProviderManager:
+  image: quay.io/dcm-project/service-provider-manager
+  tag: ""  # defaults to global.imageTag
+
+catalogManager:
+  image: quay.io/dcm-project/catalog-manager
+  tag: ""
+
+policyManager:
+  image: quay.io/dcm-project/policy-manager
+  tag: ""
+
+placementManager:
+  image: quay.io/dcm-project/placement-manager
+  tag: ""
+
+# -- DCM UI
+dcmUi:
+  enabled: true
+  image: quay.io/dcm-project/dcm-ui
+  tag: ""
+  route:
+    enabled: true
+    host: ""
+  ingress:
+    enabled: false
+    className: ""
+    host: ""
+    tls: []
+    annotations: {}
+
+# -- Optional service providers (disabled by default)
+kubevirtServiceProvider:
+  enabled: false
+  image: quay.io/dcm-project/kubevirt-service-provider
+  tag: ""
+  providerName: kubevirt-service-provider
+  namespace: default
+  kubeconfig: ""  # base64-encoded kubeconfig content for the Secret
+
+k8sContainerServiceProvider:
+  enabled: false
+  image: quay.io/dcm-project/k8s-container-service-provider
+  tag: ""
+  spName: k8s-container-provider
+  namespace: default
+  externalSvcType: NodePort
+  kubeconfig: ""
+
+acmClusterServiceProvider:
+  enabled: false
+  image: quay.io/dcm-project/acm-cluster-service-provider
+  tag: ""
+  spName: acm-cluster-sp
+  namespace: default
+  baseDomain: ""
+  pullSecret: ""
+  defaultInfraEnv: ""
+  agentNamespace: ""
+  kubeconfig: ""
+
+threeTierDemoServiceProvider:
+  enabled: false
+  image: quay.io/dcm-project/three-tier-app-demo-service-provider
+  tag: ""
+  spName: three-tier-provider
+  namespace: default
+  kubeconfig: ""

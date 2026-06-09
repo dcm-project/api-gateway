@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dcm.fullname" . }}-policy-manager
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+    {{- include "dcm.selectorLabels" (dict "context" . "component" "policy-manager") | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "dcm.selectorLabels" (dict "context" . "component" "policy-manager") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "dcm.selectorLabels" (dict "context" . "component" "policy-manager") | nindent 8 }}
+    spec:
+      initContainers:
+        {{- include "dcm.waitForPostgres" . | nindent 8 }}
+      containers:
+        - name: policy-manager
+          image: "{{ .Values.policyManager.image }}:{{ include "dcm.imageTag" (dict "tag" .Values.policyManager.tag "global" .Values.global) }}"
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: {{ include "dcm.fullname" . }}-db
+          env:
+            - name: DB_TYPE
+              value: pgsql
+            - name: DB_HOST
+              value: {{ include "dcm.fullname" . }}-postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: policy-manager
+            - name: BIND_ADDRESS
+              value: ":8080"
+            - name: LOG_LEVEL
+              value: info
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dcm.fullname" . }}-policy-manager
+  labels:
+    {{- include "dcm.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "dcm.selectorLabels" (dict "context" . "component" "policy-manager") | nindent 4 }}
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
