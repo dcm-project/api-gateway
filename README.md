@@ -4,7 +4,7 @@ Central clearing house for the DCM control plane: single entry point (ingress) a
 
 ## Overview
 
-- **Ingress:** Clients and frontends send REST requests to the gateway; the gateway routes them to internal managers (ServiceProviderManager, PlacementManager, PolicyManager, CatalogManager).
+- **Ingress:** Clients and frontends send REST requests to the gateway; the gateway routes them to the **control-plane** monolith (`quay.io/dcm-project/control-plane`).
 - **Egress:** Outbound calls from DCM to external systems are intended to go through the gateway (see [Egress](#egress) below). Placeholders only in this deliverable.
 - **Stateless:** No server-side sessions; each request is independent.
 - **Auth:** Not in scope for the first deliverable; Keycloak (or another IdP) will be added later.
@@ -12,10 +12,7 @@ Central clearing house for the DCM control plane: single entry point (ingress) a
 ```mermaid
 flowchart LR
   Client --> Gateway["API Gateway<br>Traefik :9080"]
-  Gateway --> SPM["ServiceProviderManager<br>service-provider-manager:8080"]
-  Gateway --> Catalog["CatalogManager<br>catalog-manager:8080"]
-  Gateway --> Policy["PolicyManager<br>policy-manager:8080"]
-  Gateway --> Placement["PlacementManager<br>placement-manager:8080"]
+  Gateway --> CP["control-plane<br>catalog + policy + placement + SP :8080"]
 ```
 
 ## Running the gateway
@@ -30,7 +27,7 @@ flowchart LR
 make validate-config
 ```
 
-### Run locally (gateway and managers)
+### Run locally (gateway and control-plane)
 
 From the `api-gateway` directory, start the **default** Compose stack:
 
@@ -39,8 +36,8 @@ cd api-gateway
 make run
 ```
 
-`make run` is equivalent to `podman compose up -d` or `docker compose up -d` (whichever engine you use). 
-It starts **Traefik**, **PostgreSQL**, **NATS**, and the four **managers** (ServiceProviderManager, CatalogManager, PolicyManager, PlacementManager).
+`make run` is equivalent to `podman compose up -d` or `docker compose up -d` (whichever engine you use).
+It starts **Traefik**, **PostgreSQL**, **NATS**, and **control-plane** (monolith on `:8080`).
 
 It does **not** start the optional **service provider** containers (`kubevirt-service-provider`, `k8s-container-service-provider`, `acm-cluster-service-provider`). 
 Those services are declared with [Compose profiles](https://docs.docker.com/compose/how-tos/profiles/) in `compose.yaml` (`kubevirt`, `k8s-container`, `acm-cluster`, or `providers`
@@ -53,7 +50,8 @@ The gateway is at `http://localhost:9080`. Stop with `make compose-down`. To run
 
 ### Image versions
 
-Each DCM manager image defaults to `:main` but can be pinned to a specific version via environment variables in `.env`.
+The control-plane image defaults to `:main` but can be pinned via `CONTROL_PLANE_VERSION` in `.env`.
+Requires [control-plane](https://github.com/dcm-project/control-plane) image on Quay (see control-plane PR for CI push).
 
 #### Available tag formats
 
@@ -73,18 +71,14 @@ Browse available tags for a service at `https://quay.io/repository/dcm-project/<
 Set the corresponding variable in `.env` (see `.env.example` for the full list):
 
 ```bash
-PLACEMENT_MANAGER_VERSION=v0.0.1
-CATALOG_MANAGER_VERSION=v0.0.1-rc.3
+CONTROL_PLANE_VERSION=v0.0.1
 ```
 
-Omitting a variable (or leaving it commented out) defaults to `main`.
+Omitting the variable defaults to `main`.
 
 | Variable | Service |
 |---|---|
-| `SERVICE_PROVIDER_MANAGER_VERSION` | service-provider-manager |
-| `CATALOG_MANAGER_VERSION` | catalog-manager |
-| `POLICY_MANAGER_VERSION` | policy-manager |
-| `PLACEMENT_MANAGER_VERSION` | placement-manager |
+| `CONTROL_PLANE_VERSION` | control-plane monolith |
 | `KUBEVIRT_SERVICE_PROVIDER_VERSION` | kubevirt-service-provider (`kubevirt` or `providers` profile) |
 | `K8S_CONTAINER_SERVICE_PROVIDER_VERSION` | k8s-container-service-provider (`k8s-container` or `providers` profile) |
 | `ACM_CLUSTER_SERVICE_PROVIDER_VERSION` | acm-cluster-service-provider (`acm-cluster` or `providers` profile) |
@@ -102,11 +96,11 @@ podman compose config | grep "quay.io/dcm-project"
 1. Check available tags on [quay.io/dcm-project](https://quay.io/organization/dcm-project) for the service you want to update.
 2. Set the version variable in `.env`:
    ```bash
-   PLACEMENT_MANAGER_VERSION=v0.0.1
+   CONTROL_PLANE_VERSION=v0.0.1
    ```
 3. Restart the stack to pull the new image:
    ```bash
-   make run                    # core stack (gateway + managers)
+   make run                    # core stack (gateway + control-plane)
    make run-with-providers     # or, if running with service providers
    ```
 
@@ -137,7 +131,7 @@ Then mount the ConfigMap into the Traefik pod at `/etc/traefik/traefik.yml` and 
 
 ### Testing locally
 
-1. **Validate and start the core stack (gateway + managers)**
+1. **Validate and start the core stack (gateway + control-plane)**
    ```bash
    make validate-config
    make run
@@ -149,29 +143,27 @@ Then mount the ConfigMap into the Traefik pod at `/etc/traefik/traefik.yml` and 
    ```bash
    curl -s http://localhost:9080/ping
    ```
-3. **Health checks (gateway + managers)**
-   After `make run`, the health endpoints only cover the four managers that are part of the default stack. 
-   For example: `curl -s http://localhost:9080/api/v1alpha1/health/providers`. Stop with `make compose-down`. 
+3. **Health checks (gateway + control-plane)**
+   After `make run`, legacy per-domain health paths still work and map to the monolith health endpoint. For example: `curl -s http://localhost:9080/api/v1alpha1/health/providers` or `curl -s http://localhost:9080/api/v1alpha1/health`. Stop with `make compose-down`.
 
 ## Route mapping
 
-| Path prefix                              | Backend                |
-|------------------------------------------|------------------------|
-| `/api/v1alpha1/health/providers`         | ServiceProviderManager |
-| `/api/v1alpha1/health/catalog`           | CatalogManager         |
-| `/api/v1alpha1/health/policies`          | PolicyManager          |
-| `/api/v1alpha1/health/placement`         | PlacementManager       |
-| `/api/v1alpha1/providers`                | ServiceProviderManager |
-| `/api/v1alpha1/service-type-instances`   | ServiceProviderManager |
-| `/api/v1alpha1/service-types`            | CatalogManager         |
-| `/api/v1alpha1/catalog-items`            | CatalogManager         |
-| `/api/v1alpha1/catalog-item-instances`   | CatalogManager         |
-| `/api/v1alpha1/policies`                 | PolicyManager          |
-| `/api/v1alpha1/resources`                | PlacementManager       |
+| Path prefix                              | Backend        |
+|------------------------------------------|----------------|
+| `/api/v1alpha1/health`                   | control-plane  |
+| `/api/v1alpha1/health/providers`         | control-plane  |
+| `/api/v1alpha1/health/catalog`           | control-plane  |
+| `/api/v1alpha1/health/policies`          | control-plane  |
+| `/api/v1alpha1/providers`                | control-plane  |
+| `/api/v1alpha1/service-type-instances`   | control-plane  |
+| `/api/v1alpha1/service-types`            | control-plane  |
+| `/api/v1alpha1/catalog-items`            | control-plane  |
+| `/api/v1alpha1/catalog-item-instances`   | control-plane  |
+| `/api/v1alpha1/policies`                 | control-plane  |
 
-Health paths above are GET-only; other paths support multiple methods (GET, POST, PUT, PATCH, DELETE as per the API). The `catalog-item-instances` prefix also covers AEP custom methods such as `POST /api/v1alpha1/catalog-item-instances/{id}:rehydrate`. See `config/dynamic/routes.yml` for the full list.
+Placement `/resources` and policy evaluation HTTP are **not** exposed; provisioning runs in-process inside control-plane.
 
-**Health:** Backend health is exposed through the gateway. Use `GET /api/v1alpha1/health/providers`, `/health/catalog`, `/health/policies`, `/health/placement` to check each manager (e.g. `curl http://localhost:9080/api/v1alpha1/health/catalog`). Traefik also exposes `GET /ping` for the gateway process only.
+Health paths above are GET-only; other paths support multiple methods. The `catalog-item-instances` prefix also covers `POST ...:rehydrate`. See `config/dynamic/routes.yml` for the full list. Traefik exposes `GET /ping` for the gateway process only.
 
 ## Egress
 

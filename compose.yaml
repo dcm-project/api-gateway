@@ -1,12 +1,10 @@
-# DCM API Gateway and managers. Manager images are pulled from quay.io/dcm-project.
+# DCM API Gateway and control-plane monolith. Image from quay.io/dcm-project/control-plane.
 #
-# Image versions: each manager defaults to :main. Pin specific versions by
-# setting <SERVICE>_VERSION in .env (see .env.example).
+# Image version: defaults to :main. Pin with CONTROL_PLANE_VERSION in .env.
 #
 # Credentials: set POSTGRES_USER and POSTGRES_PASSWORD in the environment or in
 # a .env file (see .env.example). Defaults are for local dev only.
 
-# Shared DB connection env (YAML anchor); services merge it with <<: *db-common and add DB_NAME.
 x-db-common: &db-common
   DB_TYPE: pgsql
   DB_HOST: postgres
@@ -14,6 +12,8 @@ x-db-common: &db-common
   DB_USER: ${POSTGRES_USER:-admin}
   DB_PASS: ${POSTGRES_PASSWORD:-adminpass}
   DB_PASSWORD: ${POSTGRES_PASSWORD:-adminpass}
+
+x-dcm-registration-url: &dcm-registration-url "http://control-plane:8080/api/v1alpha1"
 
 services:
   gateway:
@@ -26,10 +26,7 @@ services:
       - ./config/traefik.yml:/etc/traefik/traefik.yml:ro,z
       - ./config/dynamic:/etc/traefik/dynamic:ro,z
     depends_on:
-      service-provider-manager: { condition: service_started }
-      catalog-manager: { condition: service_started }
-      policy-manager: { condition: service_started }
-      placement-manager: { condition: service_started }
+      control-plane: { condition: service_started }
 
   postgres:
     image: docker.io/library/postgres:16-alpine
@@ -57,45 +54,20 @@ services:
     volumes:
       - nats_data:/data
 
-  service-provider-manager:
-    image: quay.io/dcm-project/service-provider-manager:${SERVICE_PROVIDER_MANAGER_VERSION:-main}
+  control-plane:
+    image: quay.io/dcm-project/control-plane:${CONTROL_PLANE_VERSION:-main}
     pull_policy: always
     environment:
       <<: *db-common
-      DB_NAME: service-provider
-      SVC_ADDRESS: ":8080"
+      BIND_ADDRESS: ":8080"
+      DB_NAME: control-plane
+      LOG_LEVEL: info
       NATS_URL: "nats://nats:4222"
     expose:
       - "8080"
     depends_on:
       postgres: { condition: service_healthy }
       nats: { condition: service_started }
-
-  catalog-manager:
-    image: quay.io/dcm-project/catalog-manager:${CATALOG_MANAGER_VERSION:-main}
-    pull_policy: always
-    environment:
-      <<: *db-common
-      BIND_ADDRESS: ":8080"
-      DB_NAME: catalog-manager
-      PLACEMENT_MANAGER_URL: "http://placement-manager:8080"
-    expose:
-      - "8080"
-    depends_on:
-      postgres: { condition: service_healthy }
-
-  policy-manager:
-    image: quay.io/dcm-project/policy-manager:${POLICY_MANAGER_VERSION:-main}
-    pull_policy: always
-    environment:
-      <<: *db-common
-      BIND_ADDRESS: ":8080"
-      LOG_LEVEL: info
-      DB_NAME: policy-manager
-    expose:
-      - "8080"
-    depends_on:
-      postgres: { condition: service_healthy }
 
   kubevirt-service-provider:
     container_name: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
@@ -104,7 +76,7 @@ services:
     pull_policy: always
     environment:
       NATS_URL: "nats://nats:4222"
-      SERVICE_MANAGER_ENDPOINT: "http://service-provider-manager:8080/api/v1alpha1"
+      SERVICE_MANAGER_ENDPOINT: *dcm-registration-url
       PROVIDER_NAME: ${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}
       PROVIDER_ENDPOINT: "http://${KUBEVIRT_PROVIDER_NAME:-kubevirt-service-provider}:8081/api/v1alpha1/vms"
       KUBERNETES_NAMESPACE: ${KUBEVIRT_NAMESPACE:-default}
@@ -112,21 +84,7 @@ services:
     volumes:
       - ${KUBEVIRT_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro,z
     depends_on:
-      service-provider-manager: { condition: service_started }
-
-  placement-manager:
-    image: quay.io/dcm-project/placement-manager:${PLACEMENT_MANAGER_VERSION:-main}
-    pull_policy: always
-    environment:
-      <<: *db-common
-      BIND_ADDRESS: ":8080"
-      DB_NAME: placement-manager
-      POLICY_MANAGER_EVALUATION_URL: "http://policy-manager:8081"
-      SP_RESOURCE_MANAGER_URL: "http://service-provider-manager:8080"
-    expose:
-      - "8080"
-    depends_on:
-      postgres: { condition: service_healthy }
+      control-plane: { condition: service_started }
 
   k8s-container-service-provider:
     profiles: ["providers", "k8s-container", "three-tier"]
@@ -135,7 +93,7 @@ services:
     environment:
       SP_NAME: ${K8S_CONTAINER_SP_NAME:-k8s-container-provider}
       SP_ENDPOINT: "http://k8s-container-service-provider:8080"
-      DCM_REGISTRATION_URL: "http://service-provider-manager:8080/api/v1alpha1"
+      DCM_REGISTRATION_URL: *dcm-registration-url
       SP_NATS_URL: "nats://nats:4222"
       SP_K8S_NAMESPACE: ${K8S_CONTAINER_SP_NAMESPACE:-default}
       SP_K8S_KUBECONFIG: /kubeconfig
@@ -145,7 +103,7 @@ services:
     volumes:
       - ${K8S_CONTAINER_SP_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro,z
     depends_on:
-      service-provider-manager: { condition: service_started }
+      control-plane: { condition: service_started }
       nats: { condition: service_started }
 
   acm-cluster-service-provider:
@@ -155,13 +113,11 @@ services:
     environment:
       SP_NAME: ${ACM_CLUSTER_SP_NAME:-acm-cluster-sp}
       SP_ENDPOINT: "http://acm-cluster-service-provider:8080"
-      DCM_REGISTRATION_URL: "http://service-provider-manager:8080/api/v1alpha1"
+      DCM_REGISTRATION_URL: *dcm-registration-url
       SP_NATS_URL: "nats://nats:4222"
       SP_CLUSTER_NAMESPACE: ${ACM_CLUSTER_SP_NAMESPACE:-default}
       SP_BASE_DOMAIN: ${ACM_CLUSTER_SP_BASE_DOMAIN}
       SP_PULL_SECRET: ${ACM_CLUSTER_SP_PULL_SECRET}
-      # BareMetal platform only — not used by KubeVirt.
-      # Can be omitted when SP_ENABLED_PLATFORMS=kubevirt.
       SP_DEFAULT_INFRA_ENV: ${ACM_CLUSTER_SP_DEFAULT_INFRA_ENV}
       SP_AGENT_NAMESPACE: ${ACM_CLUSTER_SP_AGENT_NAMESPACE}
       KUBECONFIG: /kubeconfig
@@ -170,7 +126,7 @@ services:
     volumes:
       - ${ACM_CLUSTER_SP_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro,z
     depends_on:
-      service-provider-manager: { condition: service_started }
+      control-plane: { condition: service_started }
       nats: { condition: service_started }
 
   dcm-ui:
@@ -194,7 +150,7 @@ services:
       CONTAINER_SP_URL: "http://k8s-container-service-provider:8080"
       SP_NAME: ${THREE_TIER_SP_NAME:-three-tier-provider}
       SP_ENDPOINT: "http://three-tier-demo-service-provider:8080"
-      DCM_REGISTRATION_URL: "http://service-provider-manager:8080/api/v1alpha1"
+      DCM_REGISTRATION_URL: *dcm-registration-url
       SP_NATS_URL: "nats://nats:4222"
       SP_K8S_NAMESPACE: ${K8S_CONTAINER_SP_NAMESPACE:-default}
       SP_K8S_KUBECONFIG: /kubeconfig
@@ -203,7 +159,7 @@ services:
     volumes:
       - ${K8S_CONTAINER_SP_KUBECONFIG:-~/.kube/config}:/kubeconfig:ro,z
     depends_on:
-      service-provider-manager: { condition: service_started }
+      control-plane: { condition: service_started }
       nats: { condition: service_started }
       k8s-container-service-provider: { condition: service_started }
       postgres: { condition: service_healthy }

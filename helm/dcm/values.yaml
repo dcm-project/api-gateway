@@ -31,22 +31,10 @@ gateway:
     #      - gateway.example.com
     annotations: {}
 
-# -- Core managers
-serviceProviderManager:
-  image: quay.io/dcm-project/service-provider-manager
+# -- Control-plane monolith (catalog, policy, placement, SP manager)
+controlPlane:
+  image: quay.io/dcm-project/control-plane
   tag: ""  # defaults to global.imageTag
-
-catalogManager:
-  image: quay.io/dcm-project/catalog-manager
-  tag: ""
-
-policyManager:
-  image: quay.io/dcm-project/policy-manager
-  tag: ""
-
-placementManager:
-  image: quay.io/dcm-project/placement-manager
-  tag: ""
 
 # -- DCM UI
 dcmUi:

@@ -6,10 +6,7 @@ metadata:
     {{- include "dcm.labels" . | nindent 4 }}
 data:
   01-create-databases.sql: |
-    CREATE DATABASE "service-provider";
-    CREATE DATABASE "policy-manager";
-    CREATE DATABASE "catalog-manager";
-    CREATE DATABASE "placement-manager";
+    CREATE DATABASE "control-plane";
     CREATE DATABASE "three-tier-sp";
 ---
 apiVersion: apps/v1

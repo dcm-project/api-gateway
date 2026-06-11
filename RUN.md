@@ -9,7 +9,7 @@
 
 ## Quick start
 
-Start all core services (gateway, postgres, nats, and all managers):
+Start all core services (gateway, postgres, nats, and control-plane):
 
 ```bash
 make run
@@ -135,11 +135,13 @@ podman compose ps    # or: docker compose ps
 Check health endpoints through the gateway:
 
 ```bash
+curl http://localhost:9080/api/v1alpha1/health
 curl http://localhost:9080/api/v1alpha1/health/providers
 curl http://localhost:9080/api/v1alpha1/health/catalog
 curl http://localhost:9080/api/v1alpha1/health/policies
-curl http://localhost:9080/api/v1alpha1/health/placement
 ```
+
+Legacy per-domain health paths map to the monolith `GET /api/v1alpha1/health`.
 
 Check health endpoint through DCM UI:
 
@@ -173,10 +175,7 @@ make compose-down
 | `ACM_CLUSTER_SP_PULL_SECRET`               | _(required)_                | Base64-encoded dockerconfigjson pull secret for ACM hosted clusters                                         |
 | `ACM_CLUSTER_SP_DEFAULT_INFRA_ENV`         | _(none)_                    | **BareMetal only.** Default InfraEnv name; can be overridden per-request via `provider_hints.acm.infra_env` |
 | `ACM_CLUSTER_SP_AGENT_NAMESPACE`           | _(none)_                    | **BareMetal only.** Namespace where Agent resources are located                                             |
-| `SERVICE_PROVIDER_MANAGER_VERSION`         | `main`                      | Image tag for service-provider-manager                                                                      |
-| `CATALOG_MANAGER_VERSION`                  | `main`                      | Image tag for catalog-manager                                                                               |
-| `POLICY_MANAGER_VERSION`                   | `main`                      | Image tag for policy-manager                                                                                |
-| `PLACEMENT_MANAGER_VERSION`                | `main`                      | Image tag for placement-manager                                                                             |
+| `CONTROL_PLANE_VERSION`                    | `main`                      | Image tag for control-plane monolith                                                                        |
 | `KUBEVIRT_SERVICE_PROVIDER_VERSION`        | `main`                      | Image tag for kubevirt-service-provider                                                                     |
 | `K8S_CONTAINER_SERVICE_PROVIDER_VERSION`   | `main`                      | Image tag for k8s-container-service-provider                                                                |
 | `ACM_CLUSTER_SERVICE_PROVIDER_VERSION`     | `main`                      | Image tag for acm-cluster-service-provider                                                                  |

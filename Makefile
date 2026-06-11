@@ -19,7 +19,7 @@ check-config:
 	$(ENGINE) rm -f gateway-validate > /dev/null 2>&1 || \
 	{ echo "Config validation failed:"; $(ENGINE) logs gateway-validate 2>&1; $(ENGINE) rm -f gateway-validate > /dev/null 2>&1; exit 1; }
 
-# Run full stack (gateway + managers) via Compose. Pulls images and starts the stack.
+# Run full stack (gateway + control-plane) via Compose. Pulls images and starts the stack.
 run:
 	$(ENGINE) compose up -d
 
