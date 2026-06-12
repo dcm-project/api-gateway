@@ -1,10 +1,12 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  # Automatic CI disabled — deploy moved to control-plane/deploy.
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   branches: [main]
+  workflow_dispatch:
 
 jobs:
   validate-traefik-config:

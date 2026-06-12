@@ -1,4 +1,16 @@
-# DCM API Gateway
+# DCM API Gateway (archived)
+
+> [!WARNING]
+> **This repository is archived and read-only.** Do not open PRs here.
+>
+> Platform deploy (compose, Helm, runbooks) moved to
+> [control-plane/deploy/](https://github.com/dcm-project/control-plane/tree/main/deploy).
+> The monolith serves the API on `:8080` with no Traefik gateway.
+
+---
+
+<details>
+<summary><strong>Legacy README</strong> (historical reference only)</summary>
 
 Central clearing house for the DCM control plane: single entry point (ingress) and single exit point (egress) for all communication.
 
@@ -184,3 +196,5 @@ Egress (outbound traffic from DCM to external Service Providers) is **documented
 ## Authentication (future)
 
 Authentication and token validation (e.g. Keycloak, JWT) are **not** in the first deliverable. When added, the gateway will validate tokens and forward identity to backends using Traefik's [ForwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
+
+</details>
